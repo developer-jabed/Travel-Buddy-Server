@@ -4,9 +4,9 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import httpStatus from "http-status";
 import * as tripService from "./trip.service";
-import { IPaginationOptions } from "../../../interfaces/pagination";
 import pick from "../../../shared/pick";
 import { tripFilterableFields } from "./trip.constant";
+import { IPaginationOptions } from "../../interfaces/pagination";
 
 export const createTrip = catchAsync(async (req: Request, res: Response) => {
     const userId = req.user.id; // set by auth middleware
@@ -14,27 +14,39 @@ export const createTrip = catchAsync(async (req: Request, res: Response) => {
     const trip = await tripService.createTrip(userId, payload);
     sendResponse(res, { statusCode: httpStatus.CREATED, success: true, message: "Trip created", data: trip });
 });
-
 export const getAllTrips = catchAsync(async (req: Request, res: Response) => {
-    const filters = pick(req.query, tripFilterableFields);
-    const searchTerm = req.query.searchTerm as string;
-    if (searchTerm) (filters as any).searchTerm = searchTerm;
+  const filters = pick(req.query, tripFilterableFields);
+  const searchTerm = req.query.searchTerm as string;
+  if (searchTerm) (filters as any).searchTerm = searchTerm;
 
-    const options: IPaginationOptions = {
-        page: Number(req.query.page) || 1,
-        limit: Number(req.query.limit) || 10,
-    };
+  const options: IPaginationOptions = {
+    page: Number(req.query.page) || 1,
+    limit: Number(req.query.limit) || 10,
+    sortBy: req.query.sortBy as string,
+    sortOrder: req.query.sortOrder as "asc" | "desc",
+  };
 
-    const result = await tripService.getAllTrips(filters, options);
-    sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Trips fetched", data: result });
+  const result = await tripService.getAllTrips(filters, options);
+  sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Trips fetched", data: result });
 });
 
 export const getOwnTrips = catchAsync(async (req: Request, res: Response) => {
-    const userId = req.user.id;
-    const options: IPaginationOptions = { page: Number(req.query.page) || 1, limit: Number(req.query.limit) || 10 };
-    const result = await tripService.getOwnTrips(userId, options);
-    sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Your trips fetched", data: result });
+  const userId = req.user.id;
+  const filters = pick(req.query, tripFilterableFields);
+  const searchTerm = req.query.searchTerm as string;
+  if (searchTerm) (filters as any).searchTerm = searchTerm;
+
+  const options: IPaginationOptions = {
+    page: Number(req.query.page) || 1,
+    limit: Number(req.query.limit) || 10,
+    sortBy: req.query.sortBy as string,
+    sortOrder: req.query.sortOrder as "asc" | "desc",
+  };
+
+  const result = await tripService.getOwnTrips(userId, filters, options);
+  sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Your trips fetched", data: result });
 });
+
 
 export const getTripById = catchAsync(async (req: Request, res: Response) => {
     const trip = await tripService.getTripById(req.params.id);

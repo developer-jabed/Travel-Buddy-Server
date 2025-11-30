@@ -1,3 +1,3 @@
 // src/app/modules/trip/trip.constant.ts
 export const tripSearchableFields = ["title", "destination", "description"];
-export const tripFilterableFields = ["tripStatus", "userId"];
+export const tripFilterableFields = ["tripStatus", "userId", "startDate", "endDate"];
