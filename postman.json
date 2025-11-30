@@ -1,122 +1,107 @@
 {
   "info": {
-    "_postman_id": "auth-api-v1",
-    "name": "Auth API v1",
+    "_postman_id": "buddy-request-api",
+    "name": "BuddyRequest API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Login User",
+      "name": "Create Buddy Request",
       "request": {
         "method": "POST",
         "header": [
-          { "key": "Content-Type", "value": "application/json" }
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+          "raw": "{\n  \"tripId\": \"cmil6knzg0000antcc748vnw4\",\n  \"receiverId\": \"cmil6knzg0000antcc748vnw5\"\n}"
         },
         "url": {
-          "raw": "http://localhost:5000/api/v1/auth/login",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "5000",
-          "path": ["api", "v1", "auth", "login"]
+          "raw": "{{baseUrl}}/api/v1/buddy-request",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "buddy-request"]
         }
       }
     },
     {
-      "name": "Refresh Token",
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Cookie", "value": "refreshToken={{refreshToken}}" }
-        ],
-        "url": {
-          "raw": "http://localhost:5000/api/v1/auth/refresh-token",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "5000",
-          "path": ["api", "v1", "auth", "refresh-token"]
-        }
-      }
-    },
-    {
-      "name": "Change Password",
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"oldPassword\": \"password123\",\n  \"newPassword\": \"newpassword456\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:5000/api/v1/auth/change-password",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "5000",
-          "path": ["api", "v1", "auth", "change-password"]
-        }
-      }
-    },
-    {
-      "name": "Forgot Password",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"user@example.com\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:5000/api/v1/auth/forgot-password",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "5000",
-          "path": ["api", "v1", "auth", "forgot-password"]
-        }
-      }
-    },
-    {
-      "name": "Reset Password",
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Authorization", "value": "Bearer {{resetToken}}" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"id\": \"cmil6knzg0000antcc748vnw4\",\n  \"password\": \"newpassword456\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:5000/api/v1/auth/reset-password",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "5000",
-          "path": ["api", "v1", "auth", "reset-password"]
-        }
-      }
-    },
-    {
-      "name": "Get Me",
+      "name": "Get All Buddy Requests (Admin/Moderator)",
       "request": {
         "method": "GET",
         "header": [
-          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          }
         ],
         "url": {
-          "raw": "http://localhost:5000/api/v1/auth/me",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "5000",
-          "path": ["api", "v1", "auth", "me"]
+          "raw": "{{baseUrl}}/api/v1/buddy-request?page=1&limit=10&sortBy=createdAt&sortOrder=desc",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "buddy-request"],
+          "query": [
+            { "key": "page", "value": "1" },
+            { "key": "limit", "value": "10" },
+            { "key": "sortBy", "value": "createdAt" },
+            { "key": "sortOrder", "value": "desc" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Own Buddy Requests",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/buddy-request/own?page=1&limit=10&sortBy=createdAt&sortOrder=desc",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "buddy-request", "own"],
+          "query": [
+            { "key": "page", "value": "1" },
+            { "key": "limit", "value": "10" },
+            { "key": "sortBy", "value": "createdAt" },
+            { "key": "sortOrder", "value": "desc" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Delete Buddy Request",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/buddy-request/{{requestId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "buddy-request", "{{requestId}}"]
         }
       }
     }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "requestId", "value": "" }
   ]
 }
