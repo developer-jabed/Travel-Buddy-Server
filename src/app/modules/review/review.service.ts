@@ -1,16 +1,5 @@
 import prisma from "../../../shared/prisma";
 
-interface CreateReviewInput {
-  reviewerId: string;
-  receiverId: string;
-  rating: number;
-  comment?: string;
-}
-
-interface UpdateReviewInput {
-  rating?: number;
-  comment?: string;
-}
 
 export const ReviewService = {
   createReview: async (data: CreateReviewInput) => {
