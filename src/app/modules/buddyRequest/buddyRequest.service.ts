@@ -96,10 +96,31 @@ const deleteBuddyRequest = async (userId: string, requestId: string) => {
     where: { id: requestId },
   });
 };
+// Update status
+const updateBuddyRequestStatus = async (
+  userId: string,
+  requestId: string,
+  status: BuddyStatus
+) => {
+  const request = await prisma.buddyRequest.findUniqueOrThrow({
+    where: { id: requestId },
+  });
+
+  // Only receiver can accept/reject
+  if (request.receiverId !== userId) {
+    throw new Error("Unauthorized to update this request");
+  }
+
+  return prisma.buddyRequest.update({
+    where: { id: requestId },
+    data: { status },
+  });
+};
 
 export const BuddyService = {
   createBuddyRequest,
   getAllBuddyRequests,
   getOwnBuddyRequests,
   deleteBuddyRequest,
+  updateBuddyRequestStatus
 };
