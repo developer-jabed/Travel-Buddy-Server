@@ -1,131 +1,81 @@
 {
   "info": {
-    "name": "TravelBuddy Chat APIs",
-    "_postman_id": "chat-api-collection",
-    "description": "Chat system for Travel Buddy (Chat + Messages)",
+    "name": "Meetup API",
+    "_postman_id": "e1b6f5d3-1234-5678-9101-abcdef123456",
+    "description": "All Meetup routes",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Create / Get Chat (Participants)",
+      "name": "Create Meetup",
       "request": {
         "method": "POST",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{token}}",
-            "type": "text"
-          },
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
+        "header": [{"key": "Content-Type", "value": "application/json"}],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"participantIds\": [\"USER_ID_1\", \"USER_ID_2\"]\n}"
+          "raw": "{\n  \"title\": \"Weekend Hiking\",\n  \"location\": \"Cox's Bazar\",\n  \"date\": \"2025-12-31T09:00:00Z\",\n  \"description\": \"Fun trip for all friends\",\n  \"tripId\": \"\"\n}"
         },
-        "url": {
-          "raw": "{{base_url}}/chat",
-          "host": ["{{base_url}}"],
-          "path": ["chat"]
-        }
+        "url": { "raw": "http://localhost:3000/api/meetups", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api", "meetups"] }
       }
     },
     {
-      "name": "Get All My Chats",
+      "name": "Get All Meetups",
       "request": {
         "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{base_url}}/chat",
-          "host": ["{{base_url}}"],
-          "path": ["chat"]
-        }
+        "url": { "raw": "http://localhost:3000/api/meetups", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api", "meetups"] }
       }
     },
     {
-      "name": "Send Message",
+      "name": "Get Meetup By ID",
       "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{token}}",
-            "type": "text"
-          },
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
+        "method": "GET",
+        "url": { "raw": "http://localhost:3000/api/meetups/{{meetupId}}", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api", "meetups", "{{meetupId}}"] }
+      }
+    },
+    {
+      "name": "Update Meetup",
+      "request": {
+        "method": "PUT",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"chatId\": \"CHAT_ID_HERE\",\n  \"text\": \"Hello, how are you?\"\n}"
+          "raw": "{\n  \"title\": \"Updated Hiking Trip\",\n  \"location\": \"Bandarban\"\n}"
         },
-        "url": {
-          "raw": "{{base_url}}/messages",
-          "host": ["{{base_url}}"],
-          "path": ["messages"]
-        }
+        "url": { "raw": "http://localhost:3000/api/meetups/{{meetupId}}", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api", "meetups", "{{meetupId}}"] }
       }
     },
     {
-      "name": "Get Messages of a Chat",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{base_url}}/messages/{{chatId}}",
-          "host": ["{{base_url}}"],
-          "path": ["messages", "{{chatId}}"]
-        }
-      }
-    },
-    {
-      "name": "Delete Message",
+      "name": "Delete Meetup",
       "request": {
         "method": "DELETE",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{base_url}}/messages/{{messageId}}",
-          "host": ["{{base_url}}"],
-          "path": ["messages", "{{messageId}}"]
-        }
+        "url": { "raw": "http://localhost:3000/api/meetups/{{meetupId}}", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api", "meetups", "{{meetupId}}"] }
       }
-    }
-  ],
-  "variable": [
-    {
-      "key": "base_url",
-      "value": "http://localhost:5000/api/v1"
     },
     {
-      "key": "token",
-      "value": ""
+      "name": "Add Participant",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"meetupId\": \"{{meetupId}}\",\n  \"userId\": \"{{userId}}\"\n}"
+        },
+        "url": { "raw": "http://localhost:3000/api/meetups/participant", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api", "meetups", "participant"] }
+      }
     },
     {
-      "key": "chatId",
-      "value": ""
+      "name": "Remove Participant",
+      "request": {
+        "method": "DELETE",
+        "url": { "raw": "http://localhost:3000/api/meetups/participant/{{participantId}}", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api", "meetups", "participant", "{{participantId}}"] }
+      }
     },
     {
-      "key": "messageId",
-      "value": ""
+      "name": "Get Participants of Meetup",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "http://localhost:3000/api/meetups/{{meetupId}}/participants", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api", "meetups", "{{meetupId}}", "participants"] }
+      }
     }
   ]
 }

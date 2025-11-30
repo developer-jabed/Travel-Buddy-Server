@@ -5,6 +5,7 @@ import { authRoutes } from '../modules/auth/auth.route';
 import { SubscriptionRoutes } from '../modules/subscription/subscription.router';
 import { buddyRoutes } from '../modules/buddyRequest/buddyRequest.router';
 import { chatRoutes } from '../modules/chat/chat.route';
+import { meetupRouter } from '../modules/meetup/meetup.route';
 
 const router = express.Router();
 
@@ -37,6 +38,10 @@ const moduleRoutes = [
         path: '/chat',
         route: chatRoutes
 
+    },
+    {
+        path: '/meetup',
+        route: meetupRouter
     }
 
 ];
