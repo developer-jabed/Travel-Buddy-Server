@@ -68,3 +68,47 @@ export const getUserChats = async (userId: string) => {
     },
   });
 };
+
+export const ChatService = {
+  // Called when buddy request is accepted
+  handleBuddyAccept: async (tripId: string, senderId: string, receiverId: string) => {
+    // 1. Check if a chat for this trip already exists
+    let chat = await prisma.chat.findFirst({
+      where: {
+        tripId: tripId
+      }
+    });
+
+    // 2. If no chat, create one
+    if (!chat) {
+      chat = await prisma.chat.create({
+        data: {
+          tripId
+        }
+      });
+    }
+
+    // 3. Add both sender & receiver to chat (skip if already exists)
+    const participantIds = [senderId, receiverId];
+
+    for (const uid of participantIds) {
+      const exists = await prisma.chatParticipant.findFirst({
+        where: {
+          chatId: chat.id,
+          userId: uid
+        }
+      });
+
+      if (!exists) {
+        await prisma.chatParticipant.create({
+          data: {
+            chatId: chat.id,
+            userId: uid
+          }
+        });
+      }
+    }
+
+    return chat;
+  }
+};

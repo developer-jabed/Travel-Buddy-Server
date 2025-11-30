@@ -1,142 +1,131 @@
 {
   "info": {
-    "name": "Travel Buddy API - BuddyRequest",
-    "_postman_id": "d4b9a7c8-1234-4567-890a-abcdef123456",
-    "description": "BuddyRequest module API collection with auth",
+    "name": "TravelBuddy Chat APIs",
+    "_postman_id": "chat-api-collection",
+    "description": "Chat system for Travel Buddy (Chat + Messages)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Create Buddy Request",
+      "name": "Create / Get Chat (Participants)",
       "request": {
         "method": "POST",
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer <YOUR_TOKEN_HERE>",
+            "value": "Bearer {{token}}",
             "type": "text"
           },
           {
             "key": "Content-Type",
-            "value": "application/json",
-            "type": "text"
+            "value": "application/json"
           }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"tripId\": \"trip123\",\n  \"receiverId\": \"user456\"\n}"
+          "raw": "{\n  \"participantIds\": [\"USER_ID_1\", \"USER_ID_2\"]\n}"
         },
         "url": {
-          "raw": "http://localhost:5000/api/v1/buddy-request",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "5000",
-          "path": ["api", "v1", "buddy-request"]
+          "raw": "{{base_url}}/chat",
+          "host": ["{{base_url}}"],
+          "path": ["chat"]
         }
-      },
-      "response": []
+      }
     },
     {
-      "name": "Get All Buddy Requests (Admin/Moderator)",
+      "name": "Get All My Chats",
       "request": {
         "method": "GET",
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer <YOUR_TOKEN_HERE>",
-            "type": "text"
+            "value": "Bearer {{token}}"
           }
         ],
         "url": {
-          "raw": "http://localhost:5000/api/v1/buddy-request?page=1&limit=10&sortBy=createdAt&sortOrder=desc",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "5000",
-          "path": ["api", "v1", "buddy-request"],
-          "query": [
-            { "key": "page", "value": "1" },
-            { "key": "limit", "value": "10" },
-            { "key": "sortBy", "value": "createdAt" },
-            { "key": "sortOrder", "value": "desc" }
-          ]
+          "raw": "{{base_url}}/chat",
+          "host": ["{{base_url}}"],
+          "path": ["chat"]
         }
-      },
-      "response": []
+      }
     },
     {
-      "name": "Get Own Buddy Requests",
+      "name": "Send Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"chatId\": \"CHAT_ID_HERE\",\n  \"text\": \"Hello, how are you?\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/messages",
+          "host": ["{{base_url}}"],
+          "path": ["messages"]
+        }
+      }
+    },
+    {
+      "name": "Get Messages of a Chat",
       "request": {
         "method": "GET",
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer <YOUR_TOKEN_HERE>",
-            "type": "text"
+            "value": "Bearer {{token}}"
           }
         ],
         "url": {
-          "raw": "http://localhost:5000/api/v1/buddy-request/own?page=1&limit=10&sortBy=createdAt&sortOrder=desc",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "5000",
-          "path": ["api", "v1", "buddy-request", "own"],
-          "query": [
-            { "key": "page", "value": "1" },
-            { "key": "limit", "value": "10" },
-            { "key": "sortBy", "value": "createdAt" },
-            { "key": "sortOrder", "value": "desc" }
-          ]
+          "raw": "{{base_url}}/messages/{{chatId}}",
+          "host": ["{{base_url}}"],
+          "path": ["messages", "{{chatId}}"]
         }
-      },
-      "response": []
+      }
     },
     {
-      "name": "Delete Buddy Request",
+      "name": "Delete Message",
       "request": {
         "method": "DELETE",
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer <YOUR_TOKEN_HERE>",
-            "type": "text"
+            "value": "Bearer {{token}}"
           }
         ],
         "url": {
-          "raw": "http://localhost:5000/api/v1/buddy-request/<REQUEST_ID>",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "5000",
-          "path": ["api", "v1", "buddy-request", "<REQUEST_ID>"]
+          "raw": "{{base_url}}/messages/{{messageId}}",
+          "host": ["{{base_url}}"],
+          "path": ["messages", "{{messageId}}"]
         }
-      },
-      "response": []
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000/api/v1"
     },
     {
-      "name": "Search Buddy Requests",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer <YOUR_TOKEN_HERE>",
-            "type": "text"
-          }
-        ],
-        "url": {
-          "raw": "http://localhost:5000/api/v1/buddy-request?page=1&limit=10&tripId=trip123&status=PENDING",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "5000",
-          "path": ["api", "v1", "buddy-request"],
-          "query": [
-            { "key": "page", "value": "1" },
-            { "key": "limit", "value": "10" },
-            { "key": "tripId", "value": "trip123" },
-            { "key": "status", "value": "PENDING" }
-          ]
-        }
-      },
-      "response": []
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "chatId",
+      "value": ""
+    },
+    {
+      "key": "messageId",
+      "value": ""
     }
   ]
 }

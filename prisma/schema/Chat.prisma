@@ -1,5 +1,6 @@
 model Chat {
   id        String   @id @default(uuid())
+  tripId    String?   // <-- ADD THIS
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -8,6 +9,7 @@ model Chat {
 
   @@map("chats")
 }
+
 
 model ChatParticipant {
   id        String   @id @default(uuid())

@@ -1,9 +1,25 @@
 import prisma from "../../../shared/prisma";
 import { BuddyStatus } from "@prisma/client";
 import { IPaginationOptions } from "../../interfaces/pagination";
+import { ChatService } from "../chat/chat.service";
 
 
 const createBuddyRequest = async (userId: string, payload: { tripId: string; receiverId: string }) => {
+
+  // Prevent duplicate request
+  const exists = await prisma.buddyRequest.findFirst({
+    where: {
+      senderId: userId,
+      receiverId: payload.receiverId,
+      tripId: payload.tripId,
+      status: BuddyStatus.PENDING,
+    }
+  });
+
+  if (exists) {
+    throw new Error("You already sent a request to this user.");
+  }
+
   const buddyRequest = await prisma.buddyRequest.create({
     data: {
       tripId: payload.tripId,
@@ -13,8 +29,17 @@ const createBuddyRequest = async (userId: string, payload: { tripId: string; rec
     },
   });
 
+  // 🔥 Emit real-time event to receiver
+  if (global.io) {
+    global.io.to(payload.receiverId).emit("buddy:received", {
+      type: "NEW_REQUEST",
+      data: buddyRequest,
+    });
+  }
+
   return buddyRequest;
 };
+
 
 // Admin/Moderator: get all with filters & pagination
 const getAllBuddyRequests = async (
@@ -92,30 +117,44 @@ const deleteBuddyRequest = async (userId: string, requestId: string) => {
     throw new Error("Unauthorized to delete this request");
   }
 
-  return prisma.buddyRequest.delete({
+  const deleted = await prisma.buddyRequest.delete({
     where: { id: requestId },
   });
+
+  // 🔥 Notify both users
+  if (global.io) {
+    global.io.to(request.senderId).emit("buddy:deleted", { requestId });
+    global.io.to(request.receiverId).emit("buddy:deleted", { requestId });
+  }
+
+  return deleted;
 };
+
 // Update status
-const updateBuddyRequestStatus = async (
-  userId: string,
-  requestId: string,
-  status: BuddyStatus
-) => {
+const updateBuddyRequestStatus = async (userId: string, requestId: string, status: BuddyStatus) => {
   const request = await prisma.buddyRequest.findUniqueOrThrow({
     where: { id: requestId },
   });
 
-  // Only receiver can accept/reject
   if (request.receiverId !== userId) {
     throw new Error("Unauthorized to update this request");
   }
 
-  return prisma.buddyRequest.update({
+  // Update buddy request status
+  const updated = await prisma.buddyRequest.update({
     where: { id: requestId },
     data: { status },
   });
+
+  // When accepted, automatically add to chat room
+  if (status === BuddyStatus.ACCEPTED) {
+    await ChatService.handleBuddyAccept(request.tripId, request.senderId, request.receiverId);
+  }
+
+  return updated;
 };
+
+
 
 export const BuddyService = {
   createBuddyRequest,
