@@ -4,7 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "prisma": {
-    "schema": "./prisma/schema/"
+    "schema": "./prisma/schema/",
+    "seed": "ts-node prisma/schema/seed.ts"
   },
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only ./src/server.ts",

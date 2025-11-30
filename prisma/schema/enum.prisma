@@ -37,9 +37,11 @@ enum BuddyStatus {
 // ───────────────────────────
 enum SubscriptionPlan {
   FREE
-  PRO
-  PREMIUM
+  WEEKLY
+  MONTHLY
+  YEARLY
 }
+
 
 // ───────────────────────────
 // SUBSCRIPTION STATUS
@@ -91,4 +93,10 @@ enum UserStatus {
   ACTIVE
   INACTIVE
   BANNED
+}
+
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
 }
