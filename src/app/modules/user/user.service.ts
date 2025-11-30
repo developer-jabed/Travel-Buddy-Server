@@ -52,12 +52,31 @@ const createTraveler = async (req: Request) => {
   const hashedPassword = await bcrypt.hash(req.body.password, Number(config.salt_round));
   const { name: userName, email, TravelerProfile } = req.body;
 
+  // Handle file upload
   const file = req.file;
   if (file) {
     const uploadResult = await fileUploader.uploadToCloudinary(file);
     if (uploadResult?.secure_url) {
       TravelerProfile.profilePhoto = uploadResult.secure_url;
     }
+  }
+
+  // Ensure TravelerProfile.name is set
+  if (!TravelerProfile.name) {
+    TravelerProfile.name = userName; // fallback to user's name
+  }
+
+  // Ensure age is a number
+  if (TravelerProfile.age) {
+    TravelerProfile.age = Number(TravelerProfile.age);
+  }
+
+  // Parse interests and languages if they come as JSON strings
+  if (TravelerProfile.interests && typeof TravelerProfile.interests === "string") {
+    TravelerProfile.interests = JSON.parse(TravelerProfile.interests);
+  }
+  if (TravelerProfile.languages && typeof TravelerProfile.languages === "string") {
+    TravelerProfile.languages = JSON.parse(TravelerProfile.languages);
   }
 
   const user = await prisma.user.create({
@@ -74,40 +93,76 @@ const createTraveler = async (req: Request) => {
   return user;
 };
 
+ const getAllUsers = async (filters: any, options: IPaginationOptions) => {
+  const { page, limit, skip } = paginationHelper.calculatePagination(options);
+  const { searchTerm, ...filterData } = filters;
 
-// GET ALL USERS
-const getAllUsers = async (filters: any, options: IPaginationOptions) => {
-    const { page, limit, skip } = paginationHelper.calculatePagination(options);
-    const { searchTerm, ...filterData } = filters;
+  const andConditions: Prisma.UserWhereInput[] = [];
 
-    const andConditions: Prisma.UserWhereInput[] = [];
+  // --- SearchTerm logic ---
+  if (searchTerm && searchTerm.trim() !== "") {
+    const search = searchTerm.trim();
 
-    if (searchTerm) {
-        andConditions.push({
-            OR: userSearchableFields.map(field => ({ [field]: { contains: searchTerm, mode: "insensitive" } })),
-        });
-    }
+    // Top-level User fields
+    const userOr = userSearchableFields.map((field) => ({
+      [field]: { contains: search, mode: "insensitive" },
+    }));
 
-    if (Object.keys(filterData).length > 0) {
-        andConditions.push({
-            AND: Object.keys(filterData).map(key => ({ [key]: { equals: filterData[key] } })),
-        });
-    }
+    // Nested relations: TravelerProfile, Admin, Moderator
+    const nestedOr: Prisma.UserWhereInput[] = [
+      {
+        TravelerProfile: {
+          is: { name: { contains: search, mode: "insensitive" } },
+        },
+      },
+      {
+        Admin: {
+          is: { name: { contains: search, mode: "insensitive" } },
+        },
+      },
+      {
+        Moderator: {
+          is: { name: { contains: search, mode: "insensitive" } },
+        },
+      },
+    ];
 
-    const where: Prisma.UserWhereInput = andConditions.length ? { AND: andConditions } : {};
+    andConditions.push({ OR: [...userOr, ...nestedOr] });
+  }
 
-    const users = await prisma.user.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: options.sortBy && options.sortOrder ? { [options.sortBy]: options.sortOrder } : { createdAt: "desc" },
-        include: { Admin: true, Moderator: true, TravelerProfile: true },
+  // --- Exact filters ---
+  if (Object.keys(filterData).length > 0) {
+    andConditions.push({
+      AND: Object.keys(filterData).map((key) => ({
+        [key]: { equals: filterData[key] },
+      })),
     });
+  }
 
-    const total = await prisma.user.count({ where });
+  const where: Prisma.UserWhereInput =
+    andConditions.length > 0 ? { AND: andConditions } : {};
 
-    return { meta: { page, limit, total }, data: users };
+  // Debug log
+  console.log("Prisma where:", JSON.stringify(where, null, 2));
+
+  const users = await prisma.user.findMany({
+    where,
+    skip,
+    take: limit,
+    orderBy:
+      options.sortBy && options.sortOrder
+        ? { [options.sortBy]: options.sortOrder }
+        : { createdAt: "desc" },
+    include: { Admin: true, Moderator: true, TravelerProfile: true },
+  });
+
+  const total = await prisma.user.count({ where });
+
+  return { meta: { page, limit, total }, data: users };
 };
+
+
+
 
 // GET LOGGED-IN USER PROFILE
 const getMyProfile = async (user: IAuthUser) => {

@@ -40,6 +40,7 @@ model TravelerProfile {
   userId      String      @unique
   bio         String?     @default("")
   age         Int?
+  profilePhoto String? 
   gender      String?
   travelStyle TravelStyle @default(BUDGET)
   interests   String[]

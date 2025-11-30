@@ -43,14 +43,24 @@ const createTraveler = catchAsync(async (req: Request, res: Response) => {
 
 // GET ALL USERS
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
+  // Pick exact filter fields (like role, status)
   const filters = pick(req.query, userFilterableFields);
+
+  // Add searchTerm manually
+  const searchTerm = req.query.searchTerm as string;
+  if (searchTerm) {
+    (filters as any).searchTerm = searchTerm;
+  }
+
   const options: IPaginationOptions = {
     page: Number(req.query.page) || 1,
     limit: Number(req.query.limit) || 10,
     sortBy: req.query.sortBy as string,
-    sortOrder: req.query.sortOrder as "asc" | "desc",
+    sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
   };
+
   const result = await userService.getAllUsers(filters, options);
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -58,6 +68,7 @@ const getAllUsers = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
 
 // GET LOGGED-IN USER PROFILE
 const getMyProfile = catchAsync(async (req: Request, res: Response) => {
