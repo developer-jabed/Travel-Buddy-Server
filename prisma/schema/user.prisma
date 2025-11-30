@@ -5,7 +5,7 @@ model User {
   password String?
   photoURL String?
   role     UserRole @default(USER)
-
+  status         UserStatus    @default(ACTIVE)
   // Relations
   sentBuddyRequests     BuddyRequest[] @relation("BuddySender")
   receivedBuddyRequests BuddyRequest[] @relation("BuddyReceiver")

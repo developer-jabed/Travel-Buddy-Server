@@ -1,0 +1,163 @@
+{
+  "info": {
+    "name": "Travel User API",
+    "_postman_id": "travel-user-api-collection",
+    "description": "Postman collection for Travel User API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Admin",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"John Admin\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\",\n  \"superAdmin\": true,\n  \"permissions\": [\"ALL\"]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/users/admin",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api","users","admin"]
+        }
+      }
+    },
+    {
+      "name": "Create Moderator",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"John Moderator\",\n  \"email\": \"moderator@example.com\",\n  \"password\": \"mod123\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/users/moderator",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api","users","moderator"]
+        }
+      }
+    },
+    {
+      "name": "Create Traveler",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "multipart/form-data" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "email", "value": "traveler@example.com", "type": "text" },
+            { "key": "password", "value": "traveler123", "type": "text" },
+            { "key": "name", "value": "John Traveler", "type": "text" },
+            { "key": "TravelerProfile[age]", "value": "30", "type": "text" },
+            { "key": "TravelerProfile[gender]", "value": "Male", "type": "text" },
+            { "key": "TravelerProfile[city]", "value": "Dhaka", "type": "text" },
+            { "key": "TravelerProfile[country]", "value": "Bangladesh", "type": "text" },
+            { "key": "TravelerProfile[interests]", "value": "[\"hiking\",\"beach\"]", "type": "text" },
+            { "key": "TravelerProfile[languages]", "value": "[\"English\",\"Bengali\"]", "type": "text" },
+            { "key": "profilePhoto", "type": "file" }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/users/traveler",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api","users","traveler"]
+        }
+      }
+    },
+    {
+      "name": "Get All Users",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/users?searchTerm=john&page=1&limit=10&sortBy=createdAt&sortOrder=desc",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api","users"],
+          "query": [
+            { "key": "searchTerm", "value": "john" },
+            { "key": "page", "value": "1" },
+            { "key": "limit", "value": "10" },
+            { "key": "sortBy", "value": "createdAt" },
+            { "key": "sortOrder", "value": "desc" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Logged-in User (/me)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer <ACCESS_TOKEN>" }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/api/users/me",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api","users","me"]
+        }
+      }
+    },
+    {
+      "name": "Update User Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"INACTIVE\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/users/update-status/USER_ID",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api","users","update-status","USER_ID"]
+        }
+      }
+    },
+    {
+      "name": "Update Profile",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Authorization", "value": "Bearer <ACCESS_TOKEN>" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "name", "value": "Updated Name", "type": "text" },
+            { "key": "TravelerProfile[city]", "value": "Updated City", "type": "text" },
+            { "key": "TravelerProfile[country]", "value": "Updated Country", "type": "text" },
+            { "key": "profilePhoto", "type": "file" }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/users/update-profile",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api","users","update-profile"]
+        }
+      }
+    }
+  ]
+}

@@ -85,3 +85,10 @@ enum ReportStatus {
   RESOLVED
   REJECTED
 }
+
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BANNED
+}
