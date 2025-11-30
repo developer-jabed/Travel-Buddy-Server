@@ -10,15 +10,17 @@ model Chat {
 }
 
 model ChatParticipant {
-  id     String @id @default(uuid())
-  chatId String
-  userId String
+  id        String   @id @default(uuid())
+  chatId    String
+  userId    String
+  lastSeen  DateTime @default(now())
 
   chat Chat @relation(fields: [chatId], references: [id])
   user User @relation(fields: [userId], references: [id])
 
   @@map("chat_participants")
 }
+
 
 model Message {
   id        String   @id @default(cuid())

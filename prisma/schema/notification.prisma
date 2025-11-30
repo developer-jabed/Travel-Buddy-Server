@@ -13,3 +13,5 @@ model Notification {
 
   @@map("notifications")
 }
+
+
