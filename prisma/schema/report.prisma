@@ -1,14 +1,14 @@
 model Report {
-  id          String         @id @default(uuid())
-  reportedId  String
-  reporterId  String
-  reason      String
-  status      ReportStatus   @default(PENDING)
+  id         String       @id @default(cuid())
+  reporterId String
+  reportedId String
+  reason     String
+  status     ReportStatus @default(PENDING)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
 
-  createdAt   DateTime       @default(now())
-
-  reported    User           @relation("Reported", fields: [reportedId], references: [id])
-  reporter    User           @relation("Reporter", fields: [reporterId], references: [id])
+  reporter User @relation("Reporter", fields: [reporterId], references: [id])
+  reported User @relation("Reported", fields: [reportedId], references: [id])
 
   @@map("reports")
 }

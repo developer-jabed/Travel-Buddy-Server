@@ -2,17 +2,12 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { Application, NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
-import globalErrorHandler from './app/middlewares/globalErrorHandler';
-import { PaymentController } from './app/modules/Payment/payment.controller';
 import router from './app/routes';
+import globalErrorHandler from './app/middlewares/globalErrorHandler';
 
 const app: Application = express();
 app.use(cookieParser());
-app.post(
-    "/webhook",
-    express.raw({ type: "application/json" }),
-    PaymentController.handleStripeWebhookEvent
-);
+
 app.use(cors({
     origin: 'http://localhost:3000',
     credentials: true
