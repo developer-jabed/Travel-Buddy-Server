@@ -1,0 +1,69 @@
+model User {
+  id        String    @id @default(uuid())
+  name      String
+  email     String    @unique
+  password  String?
+  photoURL  String?   @default("")
+  role      UserRole  @default(USER)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  travelerProfile TravelerProfile?
+  moderator       Moderator?
+  admin           Admin?
+  trips           Trip[]
+  buddyRequests   BuddyRequest[]
+  messages        Message[]
+  chats           ChatParticipant[]
+  subscriptions   Subscription[]
+  reviewsReceived Review[]     @relation("ReviewReceiver")
+  reviewsGiven    Review[]     @relation("ReviewGiver")
+  notifications   Notification[]
+  meetups         MeetupParticipant[]
+
+  @@map("users")
+}
+
+model TravelerProfile {
+  id          String       @id @default(uuid())
+  userId      String       @unique
+  bio         String?      @default("")
+  age         Int?
+  gender      String?
+  travelStyle TravelStyle  @default(BUDGET)
+  interests   String[]
+  languages   String[]
+  city        String?
+  country     String?
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id])
+
+  @@map("traveler_profiles")
+}
+
+model Moderator {
+  id            String    @id @default(uuid())
+  userId        String    @unique
+  isActive      Boolean   @default(true)
+  assignedDate  DateTime  @default(now())
+
+  user          User      @relation(fields: [userId], references: [id])
+
+  @@map("moderators")
+}
+
+model Admin {
+  id            String    @id @default(uuid())
+  userId        String    @unique
+  isActive      Boolean   @default(true)
+  superAdmin    Boolean   @default(false)
+  permissions   String[]
+
+  user          User      @relation(fields: [userId], references: [id])
+
+  @@map("admins")
+}

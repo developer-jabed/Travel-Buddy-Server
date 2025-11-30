@@ -1,0 +1,12 @@
+model Subscription {
+  id          String            @id @default(uuid())
+  userId      String
+  plan        SubscriptionPlan  @default(FREE)
+  startDate   DateTime          @default(now())
+  endDate     DateTime?
+  status      SubscriptionStatus @default(ACTIVE)
+
+  user        User              @relation(fields: [userId], references: [id])
+
+  @@map("subscriptions")
+}

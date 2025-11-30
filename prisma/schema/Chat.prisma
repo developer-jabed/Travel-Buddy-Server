@@ -1,0 +1,36 @@
+model Chat {
+  id          String             @id @default(uuid())
+  createdAt   DateTime           @default(now())
+
+  participants ChatParticipant[]
+  messages     Message[]
+
+  @@map("chats")
+}
+
+model ChatParticipant {
+  id      String  @id @default(uuid())
+  chatId  String
+  userId  String
+
+  chat    Chat    @relation(fields: [chatId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@map("chat_participants")
+}
+
+model Message {
+  id        String    @id @default(uuid())
+  chatId    String
+  senderId  String
+  text      String?
+  imageURL  String?
+  voiceURL  String?
+
+  createdAt DateTime  @default(now())
+
+  chat      Chat      @relation(fields: [chatId], references: [id])
+  sender    User      @relation(fields: [senderId], references: [id])
+
+  @@map("messages")
+}

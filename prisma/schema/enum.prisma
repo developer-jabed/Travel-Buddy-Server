@@ -1,0 +1,90 @@
+
+enum UserRole {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+
+enum TravelStyle {
+  SOLO
+  BUDGET
+  LUXURY
+  BACKPACKING
+  ADVENTURE
+  FAMILY
+  FRIENDS
+  HONEYMOON
+}
+
+
+enum TripStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+// ───────────────────────────
+// BUDDY REQUEST STATUS
+// ───────────────────────────
+enum BuddyStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+// ───────────────────────────
+// SUBSCRIPTION TYPES
+// ───────────────────────────
+enum SubscriptionPlan {
+  FREE
+  PRO
+  PREMIUM
+}
+
+// ───────────────────────────
+// SUBSCRIPTION STATUS
+// ───────────────────────────
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  SUSPENDED
+}
+
+// ───────────────────────────
+// PAYMENT STATUS
+// ───────────────────────────
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+// ───────────────────────────
+// NOTIFICATION TYPES
+// ───────────────────────────
+enum NotificationType {
+  BUDDY_REQUEST
+  BUDDY_ACCEPTED
+  NEW_MESSAGE
+  NEW_MEETUP
+  MEETUP_REMINDER
+  TRIP_UPDATE
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  SYSTEM_ALERT
+}
+
+// ───────────────────────────
+// REPORT STATUS
+// ───────────────────────────
+enum ReportStatus {
+  PENDING
+  UNDER_REVIEW
+  RESOLVED
+  REJECTED
+}
