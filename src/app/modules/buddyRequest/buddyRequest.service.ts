@@ -2,6 +2,7 @@ import prisma from "../../../shared/prisma";
 import { BuddyStatus } from "@prisma/client";
 import { IPaginationOptions } from "../../interfaces/pagination";
 import { ChatService } from "../chat/chat.service";
+import { NotificationService } from "../notification/notification.service";
 
 
 const createBuddyRequest = async (userId: string, payload: { tripId: string; receiverId: string }) => {
@@ -29,6 +30,13 @@ const createBuddyRequest = async (userId: string, payload: { tripId: string; rec
     },
   });
 
+  await NotificationService.createNotification({
+    userId: payload.receiverId ,
+    type: "BUDDY_REQUEST",
+    message: "You received a buddy request",
+    link: `/buddies/requests`
+  });
+
   // 🔥 Emit real-time event to receiver
   if (global.io) {
     global.io.to(payload.receiverId).emit("buddy:received", {
@@ -36,6 +44,7 @@ const createBuddyRequest = async (userId: string, payload: { tripId: string; rec
       data: buddyRequest,
     });
   }
+
 
   return buddyRequest;
 };
@@ -150,6 +159,13 @@ const updateBuddyRequestStatus = async (userId: string, requestId: string, statu
   if (status === BuddyStatus.ACCEPTED) {
     await ChatService.handleBuddyAccept(request.tripId, request.senderId, request.receiverId);
   }
+
+    await NotificationService.createNotification({
+    userId: requestId ,
+    type: "BUDDY_REQUEST",
+    message: `You received a buddy request ${status}`,
+    link: `/buddies/requests`
+  });
 
   return updated;
 };
