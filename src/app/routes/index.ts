@@ -11,6 +11,7 @@ import {  MeetupRoutes } from '../modules/meetup/meetup.route';
 import { notificationRouter } from '../modules/notification/notification.route';
 import { AdminRoutes } from '../modules/admin/admin.route';
 import { ModeratorRoutes } from '../modules/moderator/moderator.route';
+import { TravelerRoutes } from '../modules/traveller/traveller.route';
 
 const router = express.Router();
 
@@ -67,6 +68,10 @@ const moduleRoutes = [
     {
         path: '/moderator',
         route: ModeratorRoutes
+    },
+    {
+        path: '/traveler',
+        route: TravelerRoutes
     }
 
 

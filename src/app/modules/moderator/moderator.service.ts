@@ -54,29 +54,6 @@ const getModeratorById = async (id: string): Promise<Moderator> => {
     return moderator;
 };
 
-// Update moderator
-const updateModerator = async (id: string, data: Partial<Moderator>): Promise<Moderator> => {
-    const moderator = await prisma.moderator.findUniqueOrThrow({ where: { id } });
-
-    const updated = await prisma.$transaction(async (tx) => {
-        const updatedModerator = await tx.moderator.update({
-            where: { id },
-            data,
-        });
-
-        if (data.name || data.email) {
-            await tx.user.update({
-                where: { id: moderator.userId },
-                data: { name: data.name, email: data.email },
-            });
-        }
-
-        return updatedModerator;
-    });
-
-    return updated;
-};
-
 // Delete moderator
 
 // Soft delete
@@ -94,6 +71,5 @@ const softDeleteModerator = async (id: string): Promise<Moderator> => {
 export const ModeratorService = {
     getAllModerators,
     getModeratorById,
-    updateModerator,
     softDeleteModerator,
 };

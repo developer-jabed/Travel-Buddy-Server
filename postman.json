@@ -1,99 +1,66 @@
 {
   "info": {
-    "name": "Moderator API",
-    "_postman_id": "moderator-api-collection-001",
-    "description": "Postman Collection for Moderator CRUD API",
+    "_postman_id": "traveler-module",
+    "name": "Traveler Module API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Create Moderator",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"name\": \"John Moderator\",\n  \"email\": \"johnmod@example.com\",\n  \"userId\": \"USER_ID_HERE\" \n}"
-        },
-        "url": {
-          "raw": "http://localhost:8000/api/v1/moderators",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "v1", "moderators"]
-        }
-      }
-    },
-    {
-      "name": "Get All Moderators",
+      "name": "Get All Travelers",
       "request": {
         "method": "GET",
-        "header": [],
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
         "url": {
-          "raw": "http://localhost:8000/api/v1/moderators?limit=10&page=1&searchTerm=",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "v1", "moderators"],
+          "raw": "{{base_url}}/travelers?searchTerm=john&limit=10&page=1",
+          "host": ["{{base_url}}"],
+          "path": ["travelers"],
           "query": [
+            { "key": "searchTerm", "value": "john" },
             { "key": "limit", "value": "10" },
-            { "key": "page", "value": "1" },
-            { "key": "searchTerm", "value": "" }
+            { "key": "page", "value": "1" }
           ]
         }
       }
     },
     {
-      "name": "Get Moderator by ID",
+      "name": "Get Traveler By ID",
       "request": {
         "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
         "url": {
-          "raw": "http://localhost:8000/api/v1/moderators/:id",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "v1", "moderators", ":id"]
+          "raw": "{{base_url}}/travelers/{{travelerId}}",
+          "host": ["{{base_url}}"],
+          "path": ["travelers", "{{travelerId}}"]
         }
       }
     },
     {
-      "name": "Update Moderator",
+      "name": "Soft Delete / Activate Traveler",
       "request": {
         "method": "PATCH",
         "header": [
           {
-            "key": "Content-Type",
-            "value": "application/json"
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
           }
         ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"name\": \"Updated Name\",\n  \"email\": \"updatedmod@example.com\",\n  \"photoURL\": \"https://example.com/photo.jpg\",\n  \"isActive\": true,\n  \"isDeleted\": false\n}"
-        },
         "url": {
-          "raw": "http://localhost:8000/api/v1/moderators/:id",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "v1", "moderators", ":id"]
-        }
-      }
-    },
-    {
-      "name": "Delete Moderator (Soft Delete)",
-      "request": {
-        "method": "DELETE",
-        "url": {
-          "raw": "http://localhost:8000/api/v1/moderators/:id",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8000",
-          "path": ["api", "v1", "moderators", ":id"]
+          "raw": "{{base_url}}/travelers/soft/{{travelerId}}",
+          "host": ["{{base_url}}"],
+          "path": ["travelers", "soft", "{{travelerId}}"]
         }
       }
     }

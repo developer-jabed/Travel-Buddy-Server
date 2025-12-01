@@ -37,16 +37,7 @@ const getByIdFromDB = catchAsync(async (req, res) => {
     });
 });
 
-const updateIntoDB = catchAsync(async (req, res) => {
-    const result = await ModeratorService.updateModerator(req.params.id, req.body);
 
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: "Moderator updated successfully",
-        data: result,
-    });
-});
 
 
 
@@ -64,6 +55,5 @@ const softDeleteFromDB = catchAsync(async (req, res) => {
 export const ModeratorController = {
     getAllFromDB,
     getByIdFromDB,
-    updateIntoDB,
     softDeleteFromDB,
 };

@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response } from "express";
 import { userController } from "./user.controller";
-// import auth from "../../middlewares/auth";
+import auth from "../../middlewares/auth";
 import { UserRole } from "@prisma/client";
 import { fileUploader } from "../../../helpers/fileUploader";
 import { createAdminSchema, createModeratorSchema, createTravelerValidationSchema } from "./user.validation";
@@ -10,7 +10,7 @@ const router = express.Router();
 // CREATE ADMIN
 router.post(
   "/create-admin",
-  // auth(UserRole.ADMIN),
+  auth(UserRole.ADMIN),
   fileUploader.upload.single("file"),
   (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -26,6 +26,7 @@ router.post(
 // CREATE MODERATOR
 router.post(
   "/create-moderator",
+    auth(UserRole.ADMIN),
    fileUploader.upload.single("file"),
    (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -59,14 +60,14 @@ router.post(
 // UPDATE STATUS
 router.patch(
   "/:id/status",
-  // auth(UserRole.ADMIN),
+  auth(UserRole.ADMIN),
   userController.updateStatus
 );
 
 // UPDATE PROFILE
 router.patch(
   "/update-my-profile",
-  // auth(UserRole.USER, UserRole.ADMIN),
+  auth(UserRole.USER, UserRole.ADMIN, UserRole.MODERATOR),
   fileUploader.upload.single("file"),
   userController.updateProfile
 );
