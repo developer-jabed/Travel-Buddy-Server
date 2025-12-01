@@ -8,6 +8,7 @@ import { chatRoutes } from '../modules/chat/chat.route';
 import { reportRoute } from '../modules/report/report.route';
 import { reviewRouter } from '../modules/review/review.route';
 import {  MeetupRoutes } from '../modules/meetup/meetup.route';
+import { notificationRouter } from '../modules/notification/notification.route';
 
 const router = express.Router();
 
@@ -52,6 +53,10 @@ const moduleRoutes = [
     {
         path: '/review',
         route: reviewRouter
+    },
+    {
+        path: '/notification',
+        route: notificationRouter
     }
 
 
