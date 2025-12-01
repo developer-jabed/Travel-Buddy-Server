@@ -1,55 +1,17 @@
-import { Router } from "express";
-import { MeetupController } from "./meetup.controller";
+import express from "express";
 import auth from "../../middlewares/auth";
-import { UserRole } from "@prisma/client";
+import { MeetupController } from "./meetup.controller";
 
-const router = Router();
+const router = express.Router();
 
-// 👉 Create Meetup (User + Admin)
-router.post(
-  "/",
-  auth(UserRole.USER, UserRole.ADMIN),
-  MeetupController.createMeetup
-);
+// meetup
+router.post("/", auth(), MeetupController.createMeetup);
+router.get("/:tripId", auth(), MeetupController.getMeetups);
+router.patch("/:meetupId", auth(), MeetupController.updateMeetup);
+router.delete("/:meetupId", auth(), MeetupController.deleteMeetup);
 
-// 👉 Get ALL Meetups (Public or Auth — your choice)
-router.get("/", MeetupController.getAllMeetups);
+// participants
+router.post("/:meetupId/participants", auth(), MeetupController.addParticipant);
+router.delete("/:meetupId/participants", auth(), MeetupController.removeParticipant);
 
-// 👉 Get Single Meetup (Public or Auth)
-router.get("/:id", MeetupController.getMeetupById);
-
-// 👉 Update Meetup (Only USER + ADMIN)
-router.patch(
-  "/:id",
-  auth(UserRole.USER, UserRole.ADMIN),
-  MeetupController.updateMeetup
-);
-
-// 👉 Delete Meetup (Only USER + ADMIN)
-router.delete(
-  "/:id",
-  auth(UserRole.USER, UserRole.ADMIN),
-  MeetupController.deleteMeetup
-);
-
-// 👉 Add a Participant (USER + ADMIN)
-router.post(
-  "/participant",
-  auth(UserRole.USER, UserRole.ADMIN),
-  MeetupController.addParticipant
-);
-
-// 👉 Remove Participant (USER + ADMIN)
-router.delete(
-  "/participant/:id",
-  auth(UserRole.USER, UserRole.ADMIN),
-  MeetupController.removeParticipant
-);
-
-// 👉 Get all participants of a meetup (Public or Auth)
-router.get(
-  "/participants/:meetupId",
-  MeetupController.getParticipants
-);
-
-export const meetupRoute = router;
+export const MeetupRoutes = router;

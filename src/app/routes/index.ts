@@ -7,7 +7,7 @@ import { buddyRoutes } from '../modules/buddyRequest/buddyRequest.router';
 import { chatRoutes } from '../modules/chat/chat.route';
 import { reportRoute } from '../modules/report/report.route';
 import { reviewRouter } from '../modules/review/review.route';
-import { meetupRoute } from '../modules/meetup/meetup.route';
+import {  MeetupRoutes } from '../modules/meetup/meetup.route';
 
 const router = express.Router();
 
@@ -43,7 +43,7 @@ const moduleRoutes = [
     },
     {
         path: '/meetup',
-        route: meetupRoute
+        route: MeetupRoutes
     },
     {
         path: '/report',

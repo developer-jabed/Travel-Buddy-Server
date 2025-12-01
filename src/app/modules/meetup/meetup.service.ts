@@ -1,126 +1,135 @@
 import prisma from "../../../shared/prisma";
-import ApiError from "../../errors/ApiError";
 import httpStatus from "http-status";
+import ApiError from "../../errors/ApiError";
+
+const createMeetup = async (userId: string, payload: any) => {
+  const { tripId, title, date } = payload;
+
+  const trip = await prisma.trip.findUnique({ where: { id: tripId } });
+  if (!trip) throw new ApiError(httpStatus.NOT_FOUND, "Trip not found");
+
+  if (trip.userId !== userId) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Only the trip author can create a meetup");
+  }
+
+  // ❌ Prevent duplicate meetup on same trip
+  const duplicate = await prisma.meetup.findFirst({
+    where: {
+      tripId,
+      title,
+      date: new Date(date)
+    }
+  });
+  if (duplicate) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Meetup already exists with this title & date");
+  }
+
+  const meetup = await prisma.meetup.create({
+    data: {
+      ...payload,
+    },
+  });
+
+  return meetup;
+};
+
+const getMeetups = async (tripId: string) => {
+  return prisma.meetup.findMany({
+    where: { tripId },
+    include: { participants: true },
+  });
+};
+
+const updateMeetup = async (userId: string, id: string, payload: any) => {
+  const meetup = await prisma.meetup.findUnique({
+    where: { id },
+    include: { trip: true },
+  });
+
+  if (!meetup) throw new ApiError(404, "Meetup not found");
+
+  if (meetup.trip?.userId !== userId) {
+    throw new ApiError(403, "Only trip author can update meetup");
+  }
+
+  return prisma.meetup.update({
+    where: { id },
+    data: payload,
+  });
+};
+
+const deleteMeetup = async (userId: string, id: string) => {
+  const meetup = await prisma.meetup.findUnique({
+    where: { id },
+    include: { trip: true },
+  });
+
+  if (!meetup) throw new ApiError(404, "Meetup not found");
+
+  if (meetup.trip?.userId !== userId) {
+    throw new ApiError(403, "Only trip author can delete meetup");
+  }
+
+  await prisma.meetupParticipant.deleteMany({
+    where: { meetupId: id },
+  });
+
+  return prisma.meetup.delete({ where: { id } });
+};
+
+// ------------------------ PARTICIPANTS ------------------------
+
+const addParticipant = async (userId: string, meetupId: string, participantId: string) => {
+  const meetup = await prisma.meetup.findUnique({
+    where: { id: meetupId },
+    include: { trip: true },
+  });
+
+  if (!meetup) throw new ApiError(404, "Meetup not found");
+
+  if (meetup.trip?.userId !== userId) {
+    throw new ApiError(403, "Only trip author can add participant");
+  }
+
+  // ❌ Prevent duplicate participant
+  const exists = await prisma.meetupParticipant.findFirst({
+    where: { meetupId, userId: participantId },
+  });
+
+  if (exists) {
+    throw new ApiError(400, "This user is already a participant");
+  }
+
+  return prisma.meetupParticipant.create({
+    data: {
+      meetupId,
+      userId: participantId,
+    },
+  });
+};
+
+const removeParticipant = async (userId: string, meetupId: string, participantId: string) => {
+  const meetup = await prisma.meetup.findUnique({
+    where: { id: meetupId },
+    include: { trip: true },
+  });
+
+  if (!meetup) throw new ApiError(404, "Meetup not found");
+
+  if (meetup.trip?.userId !== userId) {
+    throw new ApiError(403, "Only trip author can remove participant");
+  }
+
+  return prisma.meetupParticipant.deleteMany({
+    where: { meetupId, userId: participantId },
+  });
+};
 
 export const MeetupService = {
-  // Create a meetup
- createMeetup: async (data: CreateMeetupInput, userId: string) => {
-    // Check if trip exists and verify author
-    const trip = await prisma.trip.findUnique({
-      where: { id: data.tripId },
-    });
-
-    if (!trip) {
-      throw new ApiError(httpStatus.NOT_FOUND, "Trip not found");
-    }
-
-    // Only trip author can create meetup
-    if (trip. userId!== userId) {
-      throw new ApiError(
-        httpStatus.FORBIDDEN,
-        "Only the trip creator can create meetups"
-      );
-    }
-
-    return prisma.meetup.create({
-      data,
-    });
-  },
-
-  // Other service functions remain same...
-
-  // Get all meetups
-  getAllMeetups: async () => {
-    return prisma.meetup.findMany({
-      include: {
-        participants: true,
-      },
-    });
-  },
-
-  // Get a meetup by ID
-  getMeetupById: async (id: string) => {
-    return prisma.meetup.findUnique({
-      where: { id },
-      include: { participants: true },
-    });
-  },
-
-  // Update a meetup
-  updateMeetup: async (id: string, data: Partial<CreateMeetupInput>) => {
-    return prisma.meetup.update({
-      where: { id },
-      data,
-    });
-  },
-
-  // Delete a meetup
-  deleteMeetup: async (id: string) => {
-    return prisma.meetup.delete({
-      where: { id },
-    });
-  },
-
-  // Add participant
-  // 👉 Add Participant (only trip author)
-  addParticipant: async (data: AddParticipantInput, userId: string) => {
-    const meetup = await prisma.meetup.findUnique({
-      where: { id: data.meetupId },
-      include: { trip: true },
-    });
-
-    if (!meetup) {
-      throw new ApiError(httpStatus.NOT_FOUND, "Meetup not found");
-    }
-
-    // Check trip author
-    if (meetup.trip?.userId !== userId) {
-      throw new ApiError(
-        httpStatus.FORBIDDEN,
-        "Only the trip creator can add participants"
-      );
-    }
-
-    return prisma.meetupParticipant.create({
-      data,
-    });
-  },
-
-  // Remove participant
-  removeParticipant: async (participantId: string, userId: string) => {
-    const participant = await prisma.meetupParticipant.findUnique({
-      where: { id: participantId },
-      include: {
-        meetup: {
-          include: {
-            trip: true,
-          },
-        },
-      },
-    });
-
-    if (!participant) {
-      throw new ApiError(httpStatus.NOT_FOUND, "Participant not found");
-    }
-
-    // Check trip author
-    if (participant.meetup.trip?.userId !== userId) {
-      throw new ApiError(
-        httpStatus.FORBIDDEN,
-        "Only the trip creator can remove participants"
-      );
-    }
-
-    return prisma.meetupParticipant.delete({
-      where: { id: participantId },
-    });
-  },
-
-  // Get participants of a meetup
-  getParticipants: async (meetupId: string) => {
-    return prisma.meetupParticipant.findMany({
-      where: { meetupId },
-      include: { user: true },
-    });
-  },
+  createMeetup,
+  getMeetups,
+  updateMeetup,
+  deleteMeetup,
+  addParticipant,
+  removeParticipant,
 };
