@@ -1,81 +1,216 @@
 {
   "info": {
-    "name": "Meetup API",
-    "_postman_id": "e1b6f5d3-1234-5678-9101-abcdef123456",
-    "description": "All Meetup routes",
+    "_postman_id": "c7c2a12b-8e45-4e7a-9b21-aba45b9ff001",
+    "name": "Review & Report API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Create Meetup",
-      "request": {
-        "method": "POST",
-        "header": [{"key": "Content-Type", "value": "application/json"}],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"title\": \"Weekend Hiking\",\n  \"location\": \"Cox's Bazar\",\n  \"date\": \"2025-12-31T09:00:00Z\",\n  \"description\": \"Fun trip for all friends\",\n  \"tripId\": \"\"\n}"
+      "name": "Review",
+      "item": [
+        {
+          "name": "Create Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reviewerId\": \"USER_ID\",\n  \"receiverId\": \"USER_ID\",\n  \"rating\": 5,\n  \"comment\": \"Excellent person\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/v1/review",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "review"]
+            }
+          }
         },
-        "url": { "raw": "http://localhost:3000/api/meetups", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api", "meetups"] }
-      }
-    },
-    {
-      "name": "Get All Meetups",
-      "request": {
-        "method": "GET",
-        "url": { "raw": "http://localhost:3000/api/meetups", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api", "meetups"] }
-      }
-    },
-    {
-      "name": "Get Meetup By ID",
-      "request": {
-        "method": "GET",
-        "url": { "raw": "http://localhost:3000/api/meetups/{{meetupId}}", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api", "meetups", "{{meetupId}}"] }
-      }
-    },
-    {
-      "name": "Update Meetup",
-      "request": {
-        "method": "PUT",
-        "header": [{"key": "Content-Type", "value": "application/json"}],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"title\": \"Updated Hiking Trip\",\n  \"location\": \"Bandarban\"\n}"
+        {
+          "name": "Get All Reviews",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/v1/review",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "review"]
+            }
+          }
         },
-        "url": { "raw": "http://localhost:3000/api/meetups/{{meetupId}}", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api", "meetups", "{{meetupId}}"] }
-      }
-    },
-    {
-      "name": "Delete Meetup",
-      "request": {
-        "method": "DELETE",
-        "url": { "raw": "http://localhost:3000/api/meetups/{{meetupId}}", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api", "meetups", "{{meetupId}}"] }
-      }
-    },
-    {
-      "name": "Add Participant",
-      "request": {
-        "method": "POST",
-        "header": [{"key": "Content-Type", "value": "application/json"}],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"meetupId\": \"{{meetupId}}\",\n  \"userId\": \"{{userId}}\"\n}"
+        {
+          "name": "Get Review By ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/v1/review/{{reviewId}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "review", "{{reviewId}}"]
+            }
+          }
         },
-        "url": { "raw": "http://localhost:3000/api/meetups/participant", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api", "meetups", "participant"] }
-      }
+        {
+          "name": "Get Reviews for User",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/v1/review/user/{{userId}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "review", "user", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Review",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 4,\n  \"comment\": \"Updated review text\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/v1/review/{{reviewId}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "review", "{{reviewId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Review",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "http://localhost:5000/api/v1/review/{{reviewId}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "review", "{{reviewId}}"]
+            }
+          }
+        }
+      ]
     },
     {
-      "name": "Remove Participant",
-      "request": {
-        "method": "DELETE",
-        "url": { "raw": "http://localhost:3000/api/meetups/participant/{{participantId}}", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api", "meetups", "participant", "{{participantId}}"] }
-      }
-    },
-    {
-      "name": "Get Participants of Meetup",
-      "request": {
-        "method": "GET",
-        "url": { "raw": "http://localhost:3000/api/meetups/{{meetupId}}/participants", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api", "meetups", "{{meetupId}}", "participants"] }
-      }
+      "name": "Report",
+      "item": [
+        {
+          "name": "Create Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reporterId\": \"USER_ID\",\n  \"reportedId\": \"USER_ID\",\n  \"reason\": \"Bad behavior\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/v1/report",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "report"]
+            }
+          }
+        },
+        {
+          "name": "Get All Reports",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/v1/report",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "report"]
+            }
+          }
+        },
+        {
+          "name": "Get Reports by Reporter",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/v1/report/reporter/{{reporterId}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "report", "reporter", "{{reporterId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Reports Against User",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/v1/report/reported/{{userId}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "report", "reported", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Report By ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/v1/report/{{reportId}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "report", "{{reportId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Report",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"RESOLVED\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/v1/report/{{reportId}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "report", "{{reportId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Report",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "http://localhost:5000/api/v1/report/{{reportId}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "report", "{{reportId}}"]
+            }
+          }
+        }
+      ]
     }
   ]
 }

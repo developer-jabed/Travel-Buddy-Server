@@ -9,4 +9,4 @@ router.get("/:id", ReportController.getReportById);
 router.put("/:id/status", ReportController.updateReportStatus);
 router.delete("/:id", ReportController.deleteReport);
 
-export default router;
+export const reportRoute = router;

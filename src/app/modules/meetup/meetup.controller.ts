@@ -5,8 +5,11 @@ import sendResponse from "../../../shared/sendResponse";
 import { MeetupService } from "./meetup.service";
 
 // Create a meetup
- const createMeetup = catchAsync(async (req: Request, res: Response) => {
-  const meetup = await MeetupService.createMeetup(req.body);
+const createMeetup = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user.id; // 👈 Coming from auth middleware
+
+  const meetup = await MeetupService.createMeetup(req.body, userId);
+
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
@@ -15,8 +18,9 @@ import { MeetupService } from "./meetup.service";
   });
 });
 
+
 // Get all meetups
- const getAllMeetups = catchAsync(async (_req: Request, res: Response) => {
+const getAllMeetups = catchAsync(async (_req: Request, res: Response) => {
   const meetups = await MeetupService.getAllMeetups();
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -27,9 +31,9 @@ import { MeetupService } from "./meetup.service";
 });
 
 // Get meetup by ID
- const getMeetupById = catchAsync(async (req: Request, res: Response) => {
+const getMeetupById = catchAsync(async (req: Request, res: Response) => {
   const meetup = await MeetupService.getMeetupById(req.params.id);
-  
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -39,7 +43,7 @@ import { MeetupService } from "./meetup.service";
 });
 
 // Update meetup
- const updateMeetup = catchAsync(async (req: Request, res: Response) => {
+const updateMeetup = catchAsync(async (req: Request, res: Response) => {
   const meetup = await MeetupService.updateMeetup(req.params.id, req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -50,8 +54,8 @@ import { MeetupService } from "./meetup.service";
 });
 
 // Delete meetup
- const deleteMeetup = catchAsync(async (req: Request, res: Response) => {
-const meetup=  await MeetupService.deleteMeetup(req.params.id);
+const deleteMeetup = catchAsync(async (req: Request, res: Response) => {
+  const meetup = await MeetupService.deleteMeetup(req.params.id);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -61,8 +65,9 @@ const meetup=  await MeetupService.deleteMeetup(req.params.id);
 });
 
 // Add participant
- const addParticipant = catchAsync(async (req: Request, res: Response) => {
-  const participant = await MeetupService.addParticipant(req.body);
+const addParticipant = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user.id;
+  const participant = await MeetupService.addParticipant(req.body, userId);
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
@@ -72,8 +77,9 @@ const meetup=  await MeetupService.deleteMeetup(req.params.id);
 });
 
 // Remove participant
- const removeParticipant = catchAsync(async (req: Request, res: Response) => {
-   const meetup = await MeetupService.removeParticipant(req.params.id);
+const removeParticipant = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user.id;
+  const meetup = await MeetupService.removeParticipant(req.params.id, userId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -83,7 +89,7 @@ const meetup=  await MeetupService.deleteMeetup(req.params.id);
 });
 
 // Get participants of a meetup
- const getParticipants = catchAsync(async (req: Request, res: Response) => {
+const getParticipants = catchAsync(async (req: Request, res: Response) => {
   const participants = await MeetupService.getParticipants(req.params.meetupId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -94,12 +100,12 @@ const meetup=  await MeetupService.deleteMeetup(req.params.id);
 });
 
 export const MeetupController = {
-    createMeetup,
-    getAllMeetups,
-    getMeetupById,
-    updateMeetup,
-    deleteMeetup,
-    addParticipant,
-    removeParticipant,
-    getParticipants
+  createMeetup,
+  getAllMeetups,
+  getMeetupById,
+  updateMeetup,
+  deleteMeetup,
+  addParticipant,
+  removeParticipant,
+  getParticipants
 }

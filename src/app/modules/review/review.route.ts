@@ -9,4 +9,4 @@ router.get("/:id", ReviewController.getReviewById);
 router.put("/:id", ReviewController.updateReview);
 router.delete("/:id", ReviewController.deleteReview);
 
-export default router;
+export const reviewRouter = router;
