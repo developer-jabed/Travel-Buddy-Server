@@ -32,6 +32,8 @@ const createModerator = catchAsync(async (req: Request, res: Response) => {
 
 // CREATE TRAVELER
 const createTraveler = catchAsync(async (req: Request, res: Response) => {
+
+  console.log(req.body)
   const result = await userService.createTraveler(req);
   sendResponse(res, {
     statusCode: httpStatus.OK,
