@@ -5,7 +5,10 @@ import sendResponse from "../../../shared/sendResponse";
 import { ReportService } from "./report.service";
 
 export const createReport = catchAsync(async (req: Request, res: Response) => {
-  const report = await ReportService.createReport(req.body);
+  const reporterId = req.user.id;
+
+  const report = await ReportService.createReport(reporterId, req.body);
+
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
@@ -16,6 +19,7 @@ export const createReport = catchAsync(async (req: Request, res: Response) => {
 
 export const getAllReports = catchAsync(async (_req, res) => {
   const reports = await ReportService.getAllReports();
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -26,6 +30,7 @@ export const getAllReports = catchAsync(async (_req, res) => {
 
 export const getReportById = catchAsync(async (req, res) => {
   const report = await ReportService.getReportById(req.params.id);
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -36,6 +41,7 @@ export const getReportById = catchAsync(async (req, res) => {
 
 export const updateReportStatus = catchAsync(async (req, res) => {
   const report = await ReportService.updateReportStatus(req.params.id, req.body);
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -45,7 +51,8 @@ export const updateReportStatus = catchAsync(async (req, res) => {
 });
 
 export const deleteReport = catchAsync(async (req, res) => {
-  const report =  await ReportService.deleteReport(req.params.id);
+  const report = await ReportService.deleteReport(req.params.id);
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

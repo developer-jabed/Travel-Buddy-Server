@@ -5,7 +5,9 @@ import sendResponse from "../../../shared/sendResponse";
 import { ReviewService } from "./review.service";
 
 export const createReview = catchAsync(async (req: Request, res: Response) => {
-  const review = await ReviewService.createReview(req.body);
+  const reviewerId = req.user.id;
+  const review = await ReviewService.createReview(reviewerId, req.body);
+
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
@@ -16,6 +18,7 @@ export const createReview = catchAsync(async (req: Request, res: Response) => {
 
 export const getAllReviews = catchAsync(async (_req, res) => {
   const reviews = await ReviewService.getAllReviews();
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -26,6 +29,7 @@ export const getAllReviews = catchAsync(async (_req, res) => {
 
 export const getReviewById = catchAsync(async (req, res) => {
   const review = await ReviewService.getReviewById(req.params.id);
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -36,6 +40,7 @@ export const getReviewById = catchAsync(async (req, res) => {
 
 export const updateReview = catchAsync(async (req, res) => {
   const review = await ReviewService.updateReview(req.params.id, req.body);
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -45,7 +50,8 @@ export const updateReview = catchAsync(async (req, res) => {
 });
 
 export const deleteReview = catchAsync(async (req, res) => {
- const review=  await ReviewService.deleteReview(req.params.id);
+  const review = await ReviewService.deleteReview(req.params.id);
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
