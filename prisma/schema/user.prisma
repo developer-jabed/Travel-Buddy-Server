@@ -37,7 +37,7 @@ model User {
 model TravelerProfile {
   id          String      @id @default(uuid())
   name String
-  email         String?   
+  email         String  
   userId      String      @unique
   bio         String?     @default("")
   age         Int?
@@ -48,7 +48,7 @@ model TravelerProfile {
   languages   String[]
   city        String?
   country     String?
-
+  isDeleted     Boolean?  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -60,10 +60,13 @@ model TravelerProfile {
 model Moderator {
   id           String   @id @default(uuid())
   name String
-  email         String?   
+  email         String  
   userId       String   @unique
   isActive     Boolean  @default(true)
   assignedDate DateTime @default(now())
+  isDeleted     Boolean?  @default(false)
+   createdAt     DateTime? @default(now())
+    updatedAt     DateTime? @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 
@@ -73,12 +76,14 @@ model Moderator {
 model Admin {
   id          String   @id @default(uuid())
   name String
-  email         String?  
+  email         String
   userId      String   @unique
-
+  isDeleted     Boolean?  @default(false)
   isActive    Boolean  @default(true)
   superAdmin  Boolean  @default(false)
   permissions String[]
+   createdAt     DateTime? @default(now())
+    updatedAt     DateTime? @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 

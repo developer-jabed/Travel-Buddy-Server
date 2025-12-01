@@ -140,7 +140,11 @@ const deleteBuddyRequest = async (userId: string, requestId: string) => {
 };
 
 // Update status
-const updateBuddyRequestStatus = async (userId: string, requestId: string, status: BuddyStatus) => {
+const updateBuddyRequestStatus = async (
+  userId: string,
+  requestId: string,
+  status: BuddyStatus
+) => {
   const request = await prisma.buddyRequest.findUniqueOrThrow({
     where: { id: requestId },
   });
@@ -149,25 +153,44 @@ const updateBuddyRequestStatus = async (userId: string, requestId: string, statu
     throw new Error("Unauthorized to update this request");
   }
 
-  // Update buddy request status
-  const updated = await prisma.buddyRequest.update({
-    where: { id: requestId },
-    data: { status },
-  });
+  let result;
 
-  // When accepted, automatically add to chat room
   if (status === BuddyStatus.ACCEPTED) {
+    // When accepted, handle chat
     await ChatService.handleBuddyAccept(request.tripId, request.senderId, request.receiverId);
+
+    // Delete the buddy request after acceptance
+    result = await prisma.buddyRequest.delete({
+      where: { id: requestId },
+    });
+  } else if (status === BuddyStatus.REJECTED) {
+    // If rejected, delete the request
+    result = await prisma.buddyRequest.delete({
+      where: { id: requestId },
+    });
+  } else {
+    // Optional: for pending, maybe just update status (if needed)
+    result = await prisma.buddyRequest.update({
+      where: { id: requestId },
+      data: { status },
+    });
   }
 
-    await NotificationService.createNotification({
-    userId: requestId ,
+  // Notify sender (and receiver if needed)
+  if (global.io) {
+    global.io.to(request.senderId).emit("buddy:updated", { requestId, status });
+    global.io.to(request.receiverId).emit("buddy:updated", { requestId, status });
+  }
+
+  // Create notification for sender
+  await NotificationService.createNotification({
+    userId: request.senderId,
     type: "BUDDY_REQUEST",
-    message: `You received a buddy request ${status}`,
-    link: `/buddies/requests`
+    message: `Your buddy request was ${status}`,
+    link: `/buddies/requests`,
   });
 
-  return updated;
+  return result;
 };
 
 
