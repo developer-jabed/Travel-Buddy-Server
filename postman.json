@@ -1,90 +1,101 @@
 {
   "info": {
-    "name": "AdminRoutes",
-    "_postman_id": "f6d3d7b1-1234-4c56-9876-abcdef123456",
-    "description": "Postman collection for AdminRoutes",
+    "name": "Moderator API",
+    "_postman_id": "moderator-api-collection-001",
+    "description": "Postman Collection for Moderator CRUD API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Get All Admins",
+      "name": "Create Moderator",
       "request": {
-        "method": "GET",
+        "method": "POST",
         "header": [
-          { "key": "Authorization", "value": "Bearer {{admin_token}}", "type": "text" }
-        ],
-        "url": {
-          "raw": "{{base_url}}/admins",
-          "host": ["{{base_url}}"],
-          "path": ["admins"]
-        }
-      }
-    },
-    {
-      "name": "Get Admin by ID",
-      "request": {
-        "method": "GET",
-        "header": [
-          { "key": "Authorization", "value": "Bearer {{admin_token}}", "type": "text" }
-        ],
-        "url": {
-          "raw": "{{base_url}}/admins/{{admin_id}}",
-          "host": ["{{base_url}}"],
-          "path": ["admins", "{{admin_id}}"]
-        }
-      }
-    },
-    {
-      "name": "Update Admin",
-      "request": {
-        "method": "PATCH",
-        "header": [
-          { "key": "Authorization", "value": "Bearer {{admin_token}}", "type": "text" },
-          { "key": "Content-Type", "value": "application/json", "type": "text" }
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"Updated Admin Name\",\n  \"permissions\": [\"READ\", \"WRITE\"],\n  \"superAdmin\": true\n}"
+          "raw": "{\n  \"name\": \"John Moderator\",\n  \"email\": \"johnmod@example.com\",\n  \"userId\": \"USER_ID_HERE\" \n}"
         },
         "url": {
-          "raw": "{{base_url}}/admins/{{admin_id}}",
-          "host": ["{{base_url}}"],
-          "path": ["admins", "{{admin_id}}"]
+          "raw": "http://localhost:8000/api/v1/moderators",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "v1", "moderators"]
         }
       }
     },
     {
-      "name": "Delete Admin",
+      "name": "Get All Moderators",
       "request": {
-        "method": "DELETE",
-        "header": [
-          { "key": "Authorization", "value": "Bearer {{admin_token}}", "type": "text" }
-        ],
+        "method": "GET",
+        "header": [],
         "url": {
-          "raw": "{{base_url}}/admins/{{admin_id}}",
-          "host": ["{{base_url}}"],
-          "path": ["admins", "{{admin_id}}"]
+          "raw": "http://localhost:8000/api/v1/moderators?limit=10&page=1&searchTerm=",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "v1", "moderators"],
+          "query": [
+            { "key": "limit", "value": "10" },
+            { "key": "page", "value": "1" },
+            { "key": "searchTerm", "value": "" }
+          ]
         }
       }
     },
     {
-      "name": "Soft Delete Admin",
+      "name": "Get Moderator by ID",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8000/api/v1/moderators/:id",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "v1", "moderators", ":id"]
+        }
+      }
+    },
+    {
+      "name": "Update Moderator",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Updated Name\",\n  \"email\": \"updatedmod@example.com\",\n  \"photoURL\": \"https://example.com/photo.jpg\",\n  \"isActive\": true,\n  \"isDeleted\": false\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/api/v1/moderators/:id",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "v1", "moderators", ":id"]
+        }
+      }
+    },
+    {
+      "name": "Delete Moderator (Soft Delete)",
       "request": {
         "method": "DELETE",
-        "header": [
-          { "key": "Authorization", "value": "Bearer {{admin_token}}", "type": "text" }
-        ],
         "url": {
-          "raw": "{{base_url}}/admins/soft/{{admin_id}}",
-          "host": ["{{base_url}}"],
-          "path": ["admins", "soft", "{{admin_id}}"]
+          "raw": "http://localhost:8000/api/v1/moderators/:id",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "v1", "moderators", ":id"]
         }
       }
     }
-  ],
-  "variable": [
-    { "key": "base_url", "value": "http://localhost:5000" },
-    { "key": "admin_token", "value": "YOUR_ADMIN_JWT_TOKEN" },
-    { "key": "admin_id", "value": "ADMIN_ID_HERE" }
   ]
 }

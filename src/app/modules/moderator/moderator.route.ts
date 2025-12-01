@@ -7,11 +7,6 @@ import { moderatorValidationSchemas } from "./moderator.validation";
 
 const router = express.Router();
 
-router.post(
-  "/",
-  auth(UserRole.ADMIN),
-  ModeratorController.createModerator
-);
 
 router.get(
   "/",
@@ -32,11 +27,7 @@ router.patch(
   ModeratorController.updateIntoDB
 );
 
-router.delete(
-  "/:id",
-  auth(UserRole.ADMIN),
-  ModeratorController.deleteFromDB
-);
+
 
 router.delete(
   "/soft/:id",

@@ -1,60 +1,11 @@
 import prisma from "../../../shared/prisma";
 import { Moderator, Prisma, UserStatus, UserRole } from "@prisma/client";
-import * as bcrypt from "bcryptjs";
-import { Request } from "express";
-import config from "../../../config";
 import { paginationHelper } from "../../../helpers/paginationHelper";
 import { moderatorSearchableFields } from "./moderator.constant";
 import { IModeratorFilterRequest } from "./moderator.interface";
-import ApiError from "../../errors/ApiError";
-import { fileUploader } from "../../../helpers/fileUploader";
-
-// Create Moderator
-const createModeratorIntoDB = async (req: any) => {
-  const data = req.body;
-
-  // Upload profilePhoto if file exists
-  if (req.file) {
-    const uploaded = await fileUploader.uploadToCloudinary(req.file);
-    data.photoURL = uploaded?.secure_url;
-  }
-
-  // Hash password
-  const hashedPassword = await bcrypt.hash(data.password, 10);
-
-  // Prisma transaction
-  const result = await prisma.$transaction(async (tx) => {
-    // 1️⃣ Create User
-    const user = await tx.user.create({
-      data: {
-        name: data.name,
-        email: data.email,
-        password: hashedPassword,
-        photoURL: data.photoURL || null,
-        role: UserRole.MODERATOR,
-        status: UserStatus.ACTIVE,
-
-        Moderator: {
-          create: {
-            name: data.name,
-            email: data.email,
-          },
-        },
-      },
-      include: {
-        Moderator: true,
-      },
-    });
-
-    return user;
-  });
-
-  return result;
-};
 
 
 
-// Get all moderators
 const getAllModerators = async (filters: IModeratorFilterRequest, options: any) => {
     const { page, limit, skip } = paginationHelper.calculatePagination(options);
     const { searchTerm, ...filterData } = filters;
@@ -127,16 +78,6 @@ const updateModerator = async (id: string, data: Partial<Moderator>): Promise<Mo
 };
 
 // Delete moderator
-const deleteModerator = async (id: string): Promise<Moderator> => {
-    const moderator = await prisma.moderator.findUniqueOrThrow({ where: { id } });
-
-    const deleted = await prisma.$transaction(async (tx) => {
-        await tx.user.delete({ where: { id: moderator.userId } });
-        return await tx.moderator.delete({ where: { id } });
-    });
-
-    return deleted;
-};
 
 // Soft delete
 const softDeleteModerator = async (id: string): Promise<Moderator> => {
@@ -151,10 +92,8 @@ const softDeleteModerator = async (id: string): Promise<Moderator> => {
 };
 
 export const ModeratorService = {
-    createModeratorIntoDB,
     getAllModerators,
     getModeratorById,
     updateModerator,
-    deleteModerator,
     softDeleteModerator,
 };

@@ -10,6 +10,7 @@ import { reviewRouter } from '../modules/review/review.route';
 import {  MeetupRoutes } from '../modules/meetup/meetup.route';
 import { notificationRouter } from '../modules/notification/notification.route';
 import { AdminRoutes } from '../modules/admin/admin.route';
+import { ModeratorRoutes } from '../modules/moderator/moderator.route';
 
 const router = express.Router();
 
@@ -62,6 +63,10 @@ const moduleRoutes = [
     {
         path: '/admin',
         route: AdminRoutes
+    },
+    {
+        path: '/moderator',
+        route: ModeratorRoutes
     }
 
 

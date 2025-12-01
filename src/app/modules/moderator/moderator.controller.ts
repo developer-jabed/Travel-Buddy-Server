@@ -6,16 +6,7 @@ import { Request, RequestHandler, Response } from "express";
 import pick from "../../../shared/pick";
 import { moderatorFilterableFields } from "./moderator.constant";
 
-const createModerator = catchAsync(async (req, res) => {
-    const result = await ModeratorService.createModeratorIntoDB(req);
 
-    sendResponse(res, {
-        statusCode: httpStatus.CREATED,
-        success: true,
-        message: "Moderator created successfully",
-        data: result,
-    });
-});
 
 const getAllFromDB: RequestHandler = catchAsync(
     async (req: Request, res: Response) => {
@@ -57,16 +48,7 @@ const updateIntoDB = catchAsync(async (req, res) => {
     });
 });
 
-const deleteFromDB = catchAsync(async (req, res) => {
-    await ModeratorService.deleteModerator(req.params.id);
 
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: "Moderator deleted successfully",
-        data: ""
-    });
-});
 
 const softDeleteFromDB = catchAsync(async (req, res) => {
     const result = await ModeratorService.softDeleteModerator(req.params.id);
@@ -80,10 +62,8 @@ const softDeleteFromDB = catchAsync(async (req, res) => {
 });
 
 export const ModeratorController = {
-    createModerator,
     getAllFromDB,
     getByIdFromDB,
     updateIntoDB,
-    deleteFromDB,
     softDeleteFromDB,
 };

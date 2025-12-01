@@ -3,7 +3,7 @@ import { userController } from "./user.controller";
 // import auth from "../../middlewares/auth";
 import { UserRole } from "@prisma/client";
 import { fileUploader } from "../../../helpers/fileUploader";
-import { createTravelerValidationSchema } from "./user.validation";
+import { createAdminSchema, createModeratorSchema, createTravelerValidationSchema } from "./user.validation";
 
 const router = express.Router();
 
@@ -12,14 +12,31 @@ router.post(
   "/create-admin",
   // auth(UserRole.ADMIN),
   fileUploader.upload.single("file"),
-  userController.createAdmin
+  (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Parse and validate JSON from req.body.data
+      req.body = createAdminSchema.parse(JSON.parse(req.body.data));
+      return userController.createAdmin(req, res, next);
+    } catch (error) {
+      next(error); // Let your error handler catch Zod validation errors
+    }
+  }
 );
 
 // CREATE MODERATOR
 router.post(
   "/create-moderator",
-  // auth(UserRole.ADMIN),
-  userController.createModerator
+   fileUploader.upload.single("file"),
+   (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Parse and validate JSON from req.body.data
+      req.body = createModeratorSchema.parse(JSON.parse(req.body.data));
+      return userController.createModerator(req, res, next);
+    } catch (error) {
+      next(error); // Let your error handler catch Zod validation errors
+    }
+  }
+
 );
 
 // CREATE TRAVELER
@@ -37,19 +54,7 @@ router.post(
   }
 );
 
-// GET ALL USERS
-router.get(
-  "/",
-  // auth(UserRole.ADMIN),
-  userController.getAllUsers
-);
 
-// GET LOGGED-IN USER PROFILE
-router.get(
-  "/me",
-  // auth(UserRole.USER, UserRole.ADMIN),
-  userController.getMyProfile
-);
 
 // UPDATE STATUS
 router.patch(

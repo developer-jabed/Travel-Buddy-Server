@@ -1,11 +1,10 @@
 import { Request, Response } from "express";
 import { userService } from "./user.service";
 import httpStatus from "http-status";
-import { IPaginationOptions } from "../../interfaces/pagination";
-import { userFilterableFields } from "./user.constant";
+
 import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
-import pick from "../../../shared/pick";
+
 import { IAuthUser } from "./user.interface";
 
 // CREATE ADMIN
@@ -43,47 +42,10 @@ const createTraveler = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// GET ALL USERS
-const getAllUsers = catchAsync(async (req: Request, res: Response) => {
-  // Pick exact filter fields (like role, status)
-  const filters = pick(req.query, userFilterableFields);
-
-  // Add searchTerm manually
-  const searchTerm = req.query.searchTerm as string;
-  if (searchTerm) {
-    (filters as any).searchTerm = searchTerm;
-  }
-
-  const options: IPaginationOptions = {
-    page: Number(req.query.page) || 1,
-    limit: Number(req.query.limit) || 10,
-    sortBy: req.query.sortBy as string,
-    sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
-  };
-
-  const result = await userService.getAllUsers(filters, options);
-
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Users fetched successfully!",
-    data: result,
-  });
-});
 
 
-// GET LOGGED-IN USER PROFILE
-const getMyProfile = catchAsync(async (req: Request, res: Response) => {
-  const user = req.user as IAuthUser
-  ;
-  const result = await userService.getMyProfile(user);
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Logged-in user profile fetched successfully!",
-    data: result,
-  });
-});
+
+
 
 // UPDATE STATUS
 const updateStatus = catchAsync(async (req: Request, res: Response) => {
@@ -115,8 +77,6 @@ export const userController = {
   createAdmin,
   createModerator,
   createTraveler,
-  getAllUsers,
-  getMyProfile,
   updateStatus,
   updateProfile,
 };
