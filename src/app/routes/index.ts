@@ -2,7 +2,7 @@ import express from 'express';
 import { userRoutes } from '../modules/user/user.router';
 import { tripRoutes } from '../modules/Trip/trip.route';
 import { authRoutes } from '../modules/auth/auth.route';
-import { SubscriptionRoutes } from '../modules/subscription/subscription.router';
+// import { SubscriptionRoutes } from '../modules/subscription/subscription.router';
 import { buddyRoutes } from '../modules/buddyRequest/buddyRequest.router';
 import { chatRoutes } from '../modules/chat/chat.route';
 import { reportRoute } from '../modules/report/report.route';
@@ -32,10 +32,10 @@ const moduleRoutes = [
         path: '/auth',
         route: authRoutes
     },
-    {
-        path: '/subscriptions',
-        route: SubscriptionRoutes
-    },
+    // {
+    //     path: '/subscriptions',
+    //     route: SubscriptionRoutes
+    // },
     {
         path: '/buddy',
         route: buddyRoutes

@@ -10,7 +10,7 @@ const router = Router();
 router.post("/", auth(UserRole.USER, UserRole.ADMIN, UserRole.MODERATOR), tripController.createTrip);
 
 // Get all trips - ADMIN or MODERATOR
-router.get("/", auth(UserRole.ADMIN, UserRole.MODERATOR), tripController.getAllTrips);
+router.get("/", tripController.getAllTrips);
 
 // Get own trips - USER, ADMIN, MODERATOR
 router.get("/own", auth(UserRole.USER, UserRole.ADMIN, UserRole.MODERATOR), tripController.getOwnTrips);
@@ -23,5 +23,7 @@ router.patch("/:id", auth(UserRole.USER, UserRole.MODERATOR), tripController.upd
 
 // Delete own trip - only USER or MODERATOR if needed
 router.delete("/:id", auth(UserRole.USER, UserRole.MODERATOR), tripController.deleteOwnTrip);
+
+
 
 export const tripRoutes = router;

@@ -9,10 +9,11 @@ model User {
   // Relations
   sentBuddyRequests     BuddyRequest[] @relation("BuddySender")
   receivedBuddyRequests BuddyRequest[] @relation("BuddyReceiver")
-
+  safetyScore  Int      @default(80)
   reportsMade     Report[] @relation("Reporter")
   reportsReceived Report[] @relation("Reported")
-
+   interests   String[]
+  isVerified   Boolean   @default(false)
   payments Payment[]
   messages Message[] @relation("UserMessages")
 

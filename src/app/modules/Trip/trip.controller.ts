@@ -30,6 +30,8 @@ export const getAllTrips = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Trips fetched", data: result });
 });
 
+
+
 export const getOwnTrips = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user.id;
   const filters = pick(req.query, tripFilterableFields);

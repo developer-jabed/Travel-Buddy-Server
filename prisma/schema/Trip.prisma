@@ -9,6 +9,11 @@ model Trip {
   description String?
   tripStatus  TripStatus @default(UPCOMING)
 
+  // ⭐ Add these fields:
+  interests   String[]      @default([])     // Example: ["hiking", "beach"]
+  travelStyle String?                        // Example: "solo", "luxury", "adventure"
+  safetyScore Int?          @default(50)     // 0–100 scoring
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

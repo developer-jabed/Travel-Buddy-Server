@@ -4,47 +4,53 @@ import { IPaginationOptions } from "../../interfaces/pagination";
 import { ChatService } from "../chat/chat.service";
 import { NotificationService } from "../notification/notification.service";
 
+const createBuddyRequest = async (
+  userId: string,
+  payload: { tripId?: string | null; receiverId: string }
+) => {
+  const { tripId, receiverId } = payload;
 
-const createBuddyRequest = async (userId: string, payload: { tripId: string; receiverId: string }) => {
-
-  // Prevent duplicate request
+  // 🔍 DUPLICATE CHECK (works for both with & without trip)
   const exists = await prisma.buddyRequest.findFirst({
     where: {
       senderId: userId,
-      receiverId: payload.receiverId,
-      tripId: payload.tripId,
+      receiverId,
       status: BuddyStatus.PENDING,
-    }
+      ...(tripId
+        ? { tripId }             // match same trip
+        : { tripId: null }),     // match NO trip
+    },
   });
 
   if (exists) {
     throw new Error("You already sent a request to this user.");
   }
 
+  // 🟢 CREATE REQUEST (tripId is optional)
   const buddyRequest = await prisma.buddyRequest.create({
     data: {
-      tripId: payload.tripId,
       senderId: userId,
-      receiverId: payload.receiverId,
+      receiverId,
+      tripId: tripId ?? null, // ensure null when not provided
       status: BuddyStatus.PENDING,
     },
   });
 
+  // 🔔 Send notification
   await NotificationService.createNotification({
-    userId: payload.receiverId ,
+    userId: receiverId,
     type: "BUDDY_REQUEST",
     message: "You received a buddy request",
-    link: `/buddies/requests`
+    link: `/buddies/requests`,
   });
 
-  // 🔥 Emit real-time event to receiver
+  // 📡 Emit WebSocket event
   if (global.io) {
-    global.io.to(payload.receiverId).emit("buddy:received", {
+    global.io.to(receiverId).emit("buddy:received", {
       type: "NEW_REQUEST",
       data: buddyRequest,
     });
   }
-
 
   return buddyRequest;
 };
@@ -149,40 +155,70 @@ const updateBuddyRequestStatus = async (
     where: { id: requestId },
   });
 
+  // Ensure only the receiver can update status
   if (request.receiverId !== userId) {
     throw new Error("Unauthorized to update this request");
   }
 
   let result;
 
+  // ------------------------------
+  // ACCEPT REQUEST
+  // ------------------------------
   if (status === BuddyStatus.ACCEPTED) {
-    // When accepted, handle chat
-    await ChatService.handleBuddyAccept(request.tripId, request.senderId, request.receiverId);
 
-    // Delete the buddy request after acceptance
+    // Only create a chat if tripId exists
+    if (request.tripId) {
+      await ChatService.handleBuddyAccept(
+        request.tripId,
+        request.senderId,
+        request.receiverId
+      );
+    }
+
+    // Remove the buddy request after it's accepted
     result = await prisma.buddyRequest.delete({
       where: { id: requestId },
     });
-  } else if (status === BuddyStatus.REJECTED) {
-    // If rejected, delete the request
+  }
+
+  // ------------------------------
+  // REJECT REQUEST
+  // ------------------------------
+  else if (status === BuddyStatus.REJECTED) {
     result = await prisma.buddyRequest.delete({
       where: { id: requestId },
     });
-  } else {
-    // Optional: for pending, maybe just update status (if needed)
+  }
+
+  // ------------------------------
+  // OPTIONAL: UPDATE status (Pending → something else)
+  // ------------------------------
+  else {
     result = await prisma.buddyRequest.update({
       where: { id: requestId },
       data: { status },
     });
   }
 
-  // Notify sender (and receiver if needed)
+  // ------------------------------
+  // SOCKET EVENTS FOR REALTIME UPDATE
+  // ------------------------------
   if (global.io) {
-    global.io.to(request.senderId).emit("buddy:updated", { requestId, status });
-    global.io.to(request.receiverId).emit("buddy:updated", { requestId, status });
+    global.io.to(request.senderId).emit("buddy:updated", {
+      requestId,
+      status,
+    });
+
+    global.io.to(request.receiverId).emit("buddy:updated", {
+      requestId,
+      status,
+    });
   }
 
-  // Create notification for sender
+  // ------------------------------
+  // NOTIFICATION FOR SENDER
+  // ------------------------------
   await NotificationService.createNotification({
     userId: request.senderId,
     type: "BUDDY_REQUEST",
@@ -192,6 +228,7 @@ const updateBuddyRequestStatus = async (
 
   return result;
 };
+
 
 
 

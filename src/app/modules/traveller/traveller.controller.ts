@@ -4,6 +4,7 @@ import { travelerFilterableFields } from "./traveller.constant";
 import pick from "../../../shared/pick";
 import { TravelerService } from "./traveller.service";
 import sendResponse from "../../../shared/sendResponse";
+import catchAsync from "../../../shared/catchAsync";
 
 const getAllTravelers: RequestHandler = async (req, res) => {
   // Pick exact filters from query
@@ -30,6 +31,20 @@ const getAllTravelers: RequestHandler = async (req, res) => {
     data: result.data
   });
 };
+
+const getRecommendedTravelers = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+
+  const travelers  = await TravelerService.getRecommendedTravelers(userId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Travelers fetched successfully!",
+    data: "travelers" ,
+  });
+
+});
 
 const getTravelerById: RequestHandler = async (req, res) => {
   const { id } = req.params;
@@ -58,5 +73,6 @@ const softDeleteTraveler: RequestHandler = async (req, res) => {
 export const TravelerController = {
   getAllTravelers,
   getTravelerById,
-  softDeleteTraveler
+  softDeleteTraveler,
+  getRecommendedTravelers
 };

@@ -49,11 +49,19 @@ export const getAllTrips = async (filters: any, options: IPaginationOptions) => 
 
   const where = andConditions.length > 0 ? { AND: andConditions } : {};
 
+  // Include user to get creator name
   const trips = await prisma.trip.findMany({
     where,
     skip,
     take: limit,
     orderBy: { createdAt: "desc" },
+    include: {
+      user: {
+        select: {
+          TravelerProfile:true,
+        },
+      },
+    },
   });
 
   const total = await prisma.trip.count({ where });
@@ -136,3 +144,4 @@ export const deleteTrip = async (userId: string, tripId: string) => {
 
   return prisma.trip.delete({ where: { id: tripId } });
 };
+

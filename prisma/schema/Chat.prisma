@@ -10,7 +10,6 @@ model Chat {
   @@map("chats")
 }
 
-
 model ChatParticipant {
   id        String   @id @default(uuid())
   chatId    String
@@ -19,6 +18,8 @@ model ChatParticipant {
 
   chat Chat @relation(fields: [chatId], references: [id])
   user User @relation(fields: [userId], references: [id])
+
+  @@unique([chatId, userId], name: "chatId_userId")
 
   @@map("chat_participants")
 }

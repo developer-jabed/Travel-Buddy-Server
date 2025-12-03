@@ -1,68 +1,35 @@
 {
   "info": {
-    "_postman_id": "traveler-module",
-    "name": "Traveler Module API",
+    "_postman_id": "b7b0f123-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "name": "Traveler Recommendations API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Get All Travelers",
+      "name": "Get Recommended Travelers",
       "request": {
         "method": "GET",
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{token}}",
+            "value": "Bearer <YOUR_ACCESS_TOKEN>",
             "type": "text"
-          }
-        ],
-        "url": {
-          "raw": "{{base_url}}/travelers?searchTerm=john&limit=10&page=1",
-          "host": ["{{base_url}}"],
-          "path": ["travelers"],
-          "query": [
-            { "key": "searchTerm", "value": "john" },
-            { "key": "limit", "value": "10" },
-            { "key": "page", "value": "1" }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Get Traveler By ID",
-      "request": {
-        "method": "GET",
-        "header": [
+          },
           {
-            "key": "Authorization",
-            "value": "Bearer {{token}}",
+            "key": "Content-Type",
+            "value": "application/json",
             "type": "text"
           }
         ],
         "url": {
-          "raw": "{{base_url}}/travelers/{{travelerId}}",
-          "host": ["{{base_url}}"],
-          "path": ["travelers", "{{travelerId}}"]
+          "raw": "http://localhost:5000/traveler/recommendations",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["traveler", "recommendations"]
         }
-      }
-    },
-    {
-      "name": "Soft Delete / Activate Traveler",
-      "request": {
-        "method": "PATCH",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{token}}",
-            "type": "text"
-          }
-        ],
-        "url": {
-          "raw": "{{base_url}}/travelers/soft/{{travelerId}}",
-          "host": ["{{base_url}}"],
-          "path": ["travelers", "soft", "{{travelerId}}"]
-        }
-      }
+      },
+      "response": []
     }
   ]
 }

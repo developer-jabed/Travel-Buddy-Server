@@ -9,7 +9,10 @@ import ApiError from "../errors/ApiError";
 const auth = (...roles: string[]) => {
     return async (req: Request & { user?: any }, res: Response, next: NextFunction) => {
         try {
-            const token = req.headers.authorization || req.cookies.accessToken;
+            let token =
+                req.headers.authorization ||
+                req.headers.accesstoken ||  // <-- support your custom header
+                req.cookies.accessToken;
             console.log({ token });
 
             if (!token) {
@@ -17,7 +20,6 @@ const auth = (...roles: string[]) => {
             }
 
             const verifiedUser = jwtHelpers.verifyToken(token, config.jwt.jwt_secret as Secret)
-
             req.user = verifiedUser;
 
             if (roles.length && !roles.includes(verifiedUser.role)) {

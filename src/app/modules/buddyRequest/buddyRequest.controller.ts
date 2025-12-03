@@ -8,6 +8,8 @@ import { BuddyStatus } from "@prisma/client";
 
  const createBuddyRequest = catchAsync(async (req: Request & { user?: any }, res: Response) => {
   const result = await BuddyService.createBuddyRequest(req.user.id, req.body);
+  // console.log(req.user)
+  console.log("result:",req)
 
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
