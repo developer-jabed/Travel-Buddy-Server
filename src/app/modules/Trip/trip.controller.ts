@@ -9,10 +9,10 @@ import { tripFilterableFields } from "./trip.constant";
 import { IPaginationOptions } from "../../interfaces/pagination";
 
 export const createTrip = catchAsync(async (req: Request, res: Response) => {
-    const userId = req.user.id; // set by auth middleware
-    const payload = req.body;
-    const trip = await tripService.createTrip(userId, payload);
-    sendResponse(res, { statusCode: httpStatus.CREATED, success: true, message: "Trip created", data: trip });
+  const userId = req.user.id; // set by auth middleware
+  const payload = req.body;
+  const trip = await tripService.createTrip(userId, payload);
+  sendResponse(res, { statusCode: httpStatus.CREATED, success: true, message: "Trip created", data: trip });
 });
 export const getAllTrips = catchAsync(async (req: Request, res: Response) => {
   const filters = pick(req.query, tripFilterableFields);
@@ -51,21 +51,29 @@ export const getOwnTrips = catchAsync(async (req: Request, res: Response) => {
 
 
 export const getTripById = catchAsync(async (req: Request, res: Response) => {
-    const trip = await tripService.getTripById(req.params.id);
-    sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Trip fetched", data: trip });
+  const trip = await tripService.getTripById(req.params.id);
+  sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Trip fetched", data: trip });
 });
 
 export const updateOwnTrip = catchAsync(async (req: Request, res: Response) => {
-    const userId = req.user.id;
-    const tripId = req.params.id;
-    const payload = req.body;
-    const updated = await tripService.updateTrip(userId, tripId, payload);
-    sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Trip updated", data: updated });
+  const userId = req.user.id;
+  const tripId = req.params.id;
+  const payload = req.body;
+  const updated = await tripService.updateTrip(userId, tripId, payload);
+  sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Trip updated", data: updated });
 });
 
 export const deleteOwnTrip = catchAsync(async (req: Request, res: Response) => {
-    const userId = req.user.id;
-    const tripId = req.params.id;
-    const deleted = await tripService.deleteTrip(userId, tripId);
-    sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Trip deleted", data: deleted });
+  const user = req.user;          // full user { id, role, email }
+  const tripId = req.params.id;
+
+  const deleted = await tripService.deleteTrip(user, tripId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Trip deleted successfully",
+    data: deleted,
+  });
 });
+

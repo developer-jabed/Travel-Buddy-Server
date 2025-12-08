@@ -58,7 +58,7 @@ export const getAllTrips = async (filters: any, options: IPaginationOptions) => 
     include: {
       user: {
         select: {
-          TravelerProfile:true,
+          TravelerProfile: true,
         },
       },
     },
@@ -137,11 +137,25 @@ export const updateTrip = async (userId: string, tripId: string, payload: any) =
 };
 
 // Delete Own Trip
-export const deleteTrip = async (userId: string, tripId: string) => {
-  const trip = await prisma.trip.findUnique({ where: { id: tripId } });
-  if (!trip) throw new Error("Trip not found");
-  if (trip.userId !== userId) throw new Error("Unauthorized");
+export const deleteTrip = async (user: any, tripId: string) => {
+  // user = { id: string; role: "USER" | "ADMIN" }
 
-  return prisma.trip.delete({ where: { id: tripId } });
+  const trip = await prisma.trip.findUnique({ where: { id: tripId } });
+
+  if (!trip) throw new Error("Trip not found");
+
+  // Allow only admin or owner
+  const isOwner = trip.userId === user.id;
+  const isAdmin = user.role === "ADMIN";
+
+  if (!isOwner && !isAdmin) {
+    throw new Error("Unauthorized: You cannot delete this trip");
+  }
+
+  // Delete Trip
+  return prisma.trip.delete({
+    where: { id: tripId },
+  });
 };
+
 

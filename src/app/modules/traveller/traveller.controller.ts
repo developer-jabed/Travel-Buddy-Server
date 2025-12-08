@@ -32,31 +32,34 @@ const getAllTravelers: RequestHandler = async (req, res) => {
   });
 };
 
-const getRecommendedTravelers = catchAsync(async (req, res) => {
-  const userId = req.user.id;
+ const getRecommendedTravelers = catchAsync(async (req, res) => {
+  const userId = req.user?.id;
 
-  const travelers  = await TravelerService.getRecommendedTravelers(userId);
+  console.log(req.user)
+
+  const travelers = await TravelerService.getRecommendedTravelers(userId);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Travelers fetched successfully!",
-    data: "travelers" ,
+    message: "Recommended travelers fetched successfully!",
+    data: travelers,
   });
-
 });
 
-const getTravelerById: RequestHandler = async (req, res) => {
+const getTravelerById = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const traveler = await TravelerService.getTravelerById(id);
+
+  const result = await TravelerService.getTravelerById(id);
 
   sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Traveler fetched successfully!",
-    data: traveler
+    statusCode: result.success ? httpStatus.OK : httpStatus.NOT_FOUND,
+    success: result.success,
+    message: result.message,
+    data: result.data,
   });
-};
+});
+
 
 const softDeleteTraveler: RequestHandler = async (req, res) => {
   const { id } = req.params;

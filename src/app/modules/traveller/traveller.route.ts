@@ -6,8 +6,8 @@ import { TravelerController } from "./traveller.controller";
 const router = express.Router();
 
 router.get("/",   TravelerController.getAllTravelers);
-router.get("/:id", auth(UserRole.ADMIN), TravelerController.getTravelerById);
+router.get("/:id",  TravelerController.getTravelerById);
 router.patch("/soft/:id", auth(UserRole.ADMIN), TravelerController.softDeleteTraveler);
-router.get("/recommendations",  TravelerController.getRecommendedTravelers);
+router.get("/recommendations", auth(UserRole.USER), TravelerController.getRecommendedTravelers);
 
 export const TravelerRoutes = router;

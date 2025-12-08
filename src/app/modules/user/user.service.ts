@@ -170,52 +170,108 @@ const updateStatus = async (id: string, status: UserStatus) => {
 };
 
 
-const updateProfile = async (userId: string, data: any, file?: Express.Multer.File) => {
-  // Handle profile picture upload
+const updateProfile = async (
+  userId: string,
+  data: any,
+  file?: Express.Multer.File
+) => {
+  // 1. Upload image
   let profilePhotoUrl: string | undefined;
   if (file) {
     const uploadResult = await fileUploader.uploadToCloudinary(file);
     profilePhotoUrl = uploadResult?.secure_url;
   }
 
-  // Prepare data for Prisma update
+  // 2. Find user
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      TravelerProfile: true,
+      Admin: true,
+      Moderator: true,
+    },
+  });
+
+  if (!user) throw new Error("User not found");
+
+  // 3. Base user update object
   const userData: any = {};
 
-  // Update user's name if provided
   if (data.name) userData.name = data.name;
-
-  // Update user's profile picture if uploaded
   if (profilePhotoUrl) userData.photoURL = profilePhotoUrl;
 
-  // Include nested updates for related profiles if any
-  if (data.TravelerProfile || profilePhotoUrl) {
-    userData.TravelerProfile = {
-      update: {
-        ...(data.TravelerProfile || {}),
-        ...(profilePhotoUrl ? { profilePhoto: profilePhotoUrl } : {}),
-      },
-    };
+  // ---------------------------
+  // ROLE: USER (TravelerProfile)
+  // ---------------------------
+  if (user.role === "USER") {
+    if (user.TravelerProfile) {
+      userData.TravelerProfile = {
+        update: {
+          ...(data.TravelerProfile || {}),
+          ...(data.name ? { name: data.name } : {}),
+          ...(profilePhotoUrl ? { profilePhoto: profilePhotoUrl } : {}),
+        },
+      };
+    } else {
+      userData.TravelerProfile = {
+        create: {
+          name: data.name || "",
+          profilePhoto: profilePhotoUrl || "",
+          ...(data.TravelerProfile || {}),
+        },
+      };
+    }
   }
 
-  if (data.Admin || profilePhotoUrl) {
-    userData.Admin = {
-      update: {
-        ...(data.Admin || {}),
-        ...(profilePhotoUrl ? { profilePhoto: profilePhotoUrl } : {}),
-      },
-    };
+  // ---------------------------
+  // ROLE: ADMIN
+  // ---------------------------
+  if (user.role === "ADMIN") {
+    if (user.Admin) {
+      userData.Admin = {
+        update: {
+          ...(data.Admin || {}),
+          ...(data.name ? { name: data.name } : {}),
+          ...(profilePhotoUrl ? { profilePhoto: profilePhotoUrl } : {}),
+        },
+      };
+    } else {
+      userData.Admin = {
+        create: {
+          name: data.name || "",
+          email: user.email,
+          profilePhoto: profilePhotoUrl || "",
+          ...(data.Admin || {}),
+        },
+      };
+    }
   }
 
-  if (data.Moderator || profilePhotoUrl) {
-    userData.Moderator = {
-      update: {
-        ...(data.Moderator || {}),
-        ...(profilePhotoUrl ? { profilePhoto: profilePhotoUrl } : {}),
-      },
-    };
+  // ---------------------------
+  // ROLE: MODERATOR
+  // ---------------------------
+  if (user.role === "MODERATOR") {
+    if (user.Moderator) {
+      userData.Moderator = {
+        update: {
+          ...(data.Moderator || {}),
+          ...(data.name ? { name: data.name } : {}),
+          ...(profilePhotoUrl ? { profilePhoto: profilePhotoUrl } : {}),
+        },
+      };
+    } else {
+      userData.Moderator = {
+        create: {
+          name: data.name || "",
+          email: user.email,
+          profilePhoto: profilePhotoUrl || "",
+          ...(data.Moderator || {}),
+        },
+      };
+    }
   }
 
-  // Update the user in database
+  // 5. UPDATE USER
   const updatedUser = await prisma.user.update({
     where: { id: userId },
     data: userData,
@@ -228,6 +284,8 @@ const updateProfile = async (userId: string, data: any, file?: Express.Multer.Fi
 
   return updatedUser;
 };
+
+
 
 
 

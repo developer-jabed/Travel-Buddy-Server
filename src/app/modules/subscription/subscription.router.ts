@@ -1,20 +1,42 @@
 import express from "express";
-import auth from "../../middlewares/auth";
 import { SubscriptionController } from "./subscription.controller";
-import { UserRole } from "@prisma/client";
+import auth from "../../middlewares/auth";
 
 const router = express.Router();
 
+// USER: Create subscription
 router.post(
-  "/subscribe",
-  auth(UserRole.USER, UserRole.ADMIN, UserRole.MODERATOR),
+  "/",
+  auth("USER", "ADMIN"),
   SubscriptionController.createSubscription
 );
 
+// ADMIN: Get all subscriptions
 router.get(
-  "/me",
-  auth(UserRole.USER, UserRole.ADMIN, UserRole.MODERATOR),
-  SubscriptionController.getMySubscription
+  "/",
+  auth("ADMIN"),
+  SubscriptionController.getAllSubscriptions
+);
+
+// USER/ADMIN: Get subscription by ID
+router.get(
+  "//:id",
+  auth("USER", "ADMIN"),
+  SubscriptionController.getSubscriptionById
+);
+
+// ADMIN: Update
+router.patch(
+  "/:id",
+  auth("ADMIN"),
+  SubscriptionController.updateSubscription
+);
+
+// ADMIN: Delete
+router.delete(
+  "/:id",
+  auth("ADMIN"),
+  SubscriptionController.deleteSubscription
 );
 
 export const SubscriptionRoutes = router;

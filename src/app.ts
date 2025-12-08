@@ -4,8 +4,21 @@ import express, { Application, NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
 import router from './app/routes';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
+import { PaymentController } from './app/modules/payment/payment.controller';
 
 const app: Application = express();
+app.post(
+    "/webhook",
+    express.raw({ type: "application/json" }),
+    (req, res, next) => {
+        console.log("🔥 Webhook route HIT!");
+        console.log("Headers:", req.headers);
+        console.log("Raw Body:", req.body);
+        next();
+    },
+    PaymentController.handleStripeWebhookEvent
+);
+
 app.use(cookieParser());
 
 app.use(cors({
@@ -13,21 +26,14 @@ app.use(cors({
     credentials: true
 }));
 
+
+
 //parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // app.use(sanitizeInput); // ADD THIS LINE
 
 
-
-// cron.schedule('* * * * *', () => {
-//     try {
-//         AppointmentService.cancelUnpaidAppointments();
-//     }
-//     catch (err) {
-//         console.error(err);
-//     }
-// });
 
 app.get('/', (req: Request, res: Response) => {
     res.send({
