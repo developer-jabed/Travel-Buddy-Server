@@ -21,6 +21,8 @@ const auth = (...roles: string[]) => {
                 throw new ApiError(httpStatus.UNAUTHORIZED, "You are not authorized!");
             }
 
+            console.log({token})
+
             // 🔥 Remove "Bearer " if present
             if (token.startsWith("Bearer ")) {
                 token = token.split(" ")[1];
