@@ -22,7 +22,7 @@ app.post(
 app.use(cookieParser());
 
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000','https://travel-buddy-client-chi.vercel.app'],
     credentials: true
 }));
 
