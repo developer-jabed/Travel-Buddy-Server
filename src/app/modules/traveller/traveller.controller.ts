@@ -32,10 +32,17 @@ const getAllTravelers: RequestHandler = async (req, res) => {
   });
 };
 
- const getRecommendedTravelers = catchAsync(async (req, res) => {
-  const userId = req.user?.id;
+const getRecommendedTravelers = catchAsync(async (req, res) => {
+  const userId = req.user?.userId || req.user?.id || req.user?.sub;
 
-  console.log(req.user)
+  if (!userId) {
+    return sendResponse(res, {
+      statusCode: httpStatus.BAD_REQUEST,
+      success: false,
+      message: "User ID missing in token",
+      data: userId
+    });
+  }
 
   const travelers = await TravelerService.getRecommendedTravelers(userId);
 
@@ -46,6 +53,7 @@ const getAllTravelers: RequestHandler = async (req, res) => {
     data: travelers,
   });
 });
+
 
 const getTravelerById = catchAsync(async (req, res) => {
   const { id } = req.params;

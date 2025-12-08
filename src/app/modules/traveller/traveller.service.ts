@@ -212,7 +212,7 @@ const softDeleteTraveler = async (id: string) => {
 const getRecommendedTravelers = async (userId?: string) => {
   let currentProfile: any = null;
 
-  // Get current user profile
+  // Load current user's traveler profile
   if (userId) {
     const currentUser = await prisma.user.findUnique({
       where: { id: userId },
@@ -222,7 +222,7 @@ const getRecommendedTravelers = async (userId?: string) => {
     currentProfile = currentUser?.TravelerProfile;
   }
 
-  // Get all other traveler profiles
+  // Load all other traveler profiles
   const otherProfiles = await prisma.travelerProfile.findMany({
     where: {
       ...(userId ? { userId: { not: userId } } : {}),
@@ -235,10 +235,10 @@ const getRecommendedTravelers = async (userId?: string) => {
     .map((profile) => {
       let score = 0;
       const reasons: string[] = [];
-      let hasAnyMatch = false; // <-- Only show if TRUE
+      let hasAnyMatch = false;
 
       if (currentProfile) {
-        // Interests match
+        // Interest match
         if (profile.interests?.length && currentProfile.interests?.length) {
           const matched = profile.interests.filter((i) =>
             currentProfile.interests.includes(i)
@@ -260,13 +260,13 @@ const getRecommendedTravelers = async (userId?: string) => {
 
         // Language match
         if (profile.languages?.length && currentProfile.languages?.length) {
-          const matchedLang = profile.languages.filter((i) =>
+          const matched = profile.languages.filter((i) =>
             currentProfile.languages.includes(i)
           );
 
-          if (matchedLang.length > 0) {
-            score += Math.min(matchedLang.length * 5, 15);
-            reasons.push(`Speaks same languages: ${matchedLang.join(", ")}`);
+          if (matched.length > 0) {
+            score += Math.min(matched.length * 5, 15);
+            reasons.push(`Speaks same languages: ${matched.join(", ")}`);
             hasAnyMatch = true;
           }
         }
@@ -286,42 +286,58 @@ const getRecommendedTravelers = async (userId?: string) => {
         }
       }
 
-      // Safety score always contributes, but should NOT force match
+      // Safety score
       const safetyScore = profile.user.safetyScore ?? 80;
-      const safe = Math.min(safetyScore / 5, 20);
-      score += safe;
+      const safeScore = Math.min(safetyScore / 5, 20);
+      score += safeScore;
 
-      if (safe > 15) {
+      if (safeScore > 15) {
         reasons.push("High safety score");
         hasAnyMatch = true;
       }
 
-      // ❗ If nothing matched → EXCLUDE completely
+      // Exclude profiles with no match at all
       if (!hasAnyMatch) return null;
 
       return {
-        userId: profile.userId,
+        // ⭐ IDs (you asked for this)
+        travelerProfileId: profile.id,   // TravelerProfile.id
+        travelerUserId: profile.userId,  // TravelerProfile.userId (FK)
+        userId: profile.user.id,         // User.id (same, but returned separately)
+
+        // Traveler profile details
         name: profile.name,
         email: profile.email,
         profilePhoto: profile.profilePhoto,
-
         city: profile.city,
         country: profile.country,
         travelStyle: profile.travelStyle,
         interests: profile.interests,
         languages: profile.languages,
 
+        // User table details
+        user: {
+          id: profile.user.id,
+          email: profile.user.email,
+          role: profile.user.role,
+          isVerified: profile.user.isVerified,
+          safetyScore: profile.user.safetyScore,
+          createdAt: profile.user.createdAt,
+        },
+
+        // Match info
         matchPercentage: Math.round(score),
         matchReasons: reasons,
       };
     })
-    .filter(Boolean); // <--- Remove null values (no matches)
+    .filter(Boolean);
 
-  // Sort by match score
+  // Sort highest match first
   recommendations.sort((a: any, b: any) => b.matchPercentage - a.matchPercentage);
 
   return recommendations;
 };
+
 
 
 
