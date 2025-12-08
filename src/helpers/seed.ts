@@ -24,16 +24,18 @@ const seedSuperAdmin = async () => {
       Number(config.salt_round)
     );
 
-    // Create Super Admin User
+    // Create Super Admin User + Admin Profile
     const superAdminData = await prisma.user.create({
       data: {
-        name: "Jabed Islam",       // ✅ required field for User
+        name: "Jabed Islam",
         email: "jabed1780@gmail.com",
         password: hashedPassword,
         role: UserRole.ADMIN,
+
         Admin: {
           create: {
-            name: "Jabed Islam",   // ✅ required field for Admin
+            name: "Jabed Islam",
+            email: "jabed1780@gmail.com", // ✅ REQUIRED for Prisma Admin model
             superAdmin: true,
             permissions: [
               "MANAGE_USERS",
