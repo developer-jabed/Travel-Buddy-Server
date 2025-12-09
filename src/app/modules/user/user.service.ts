@@ -169,45 +169,95 @@ const updateStatus = async (id: string, status: UserStatus) => {
   return user;
 };
 
-
 const updateProfile = async (
   userId: string,
   data: any,
   file?: Express.Multer.File
 ) => {
-  // 1. Upload image
+  // --------------------------------
+  // 1. Upload image (if file exists)
+  // --------------------------------
   let profilePhotoUrl: string | undefined;
   if (file) {
     const uploadResult = await fileUploader.uploadToCloudinary(file);
     profilePhotoUrl = uploadResult?.secure_url;
   }
 
-  // 2. Find user
+  // --------------------------------
+  // 2. Fetch User + Roles
+  // --------------------------------
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
       TravelerProfile: true,
       Admin: true,
-      Moderator: true,
     },
   });
 
   if (!user) throw new Error("User not found");
 
-  // 3. Base user update object
+  // --------------------------------
+  // 3. Normalize Traveler fields
+  // --------------------------------
+  const travelerFields = [
+    "bio",
+    "age",
+    "gender",
+    "travelStyle",
+    "city",
+    "country",
+    "interests",
+    "languages",
+  ];
+
+  const travelerPayload: any = {};
+
+  travelerFields.forEach((key) => {
+    if (data[key] !== undefined && data[key] !== "") {
+      travelerPayload[key] = data[key];
+    }
+  });
+
+  // Convert age -> number
+  if (travelerPayload.age !== undefined) {
+    travelerPayload.age = Number(travelerPayload.age);
+    if (isNaN(travelerPayload.age)) {
+      throw new Error("Age must be a valid number");
+    }
+  }
+
+  // Convert interests -> Array
+  if (typeof travelerPayload.interests === "string") {
+    travelerPayload.interests = travelerPayload.interests
+      .split(",")
+      .map((v: string) => v.trim())
+      .filter((v: string) => v.length > 0);
+  }
+
+  // Convert languages -> Array
+  if (typeof travelerPayload.languages === "string") {
+    travelerPayload.languages = travelerPayload.languages
+      .split(",")
+      .map((v: string) => v.trim())
+      .filter((v: string) => v.length > 0);
+  }
+
+  // --------------------------------
+  // 4. Base User update
+  // --------------------------------
   const userData: any = {};
 
   if (data.name) userData.name = data.name;
   if (profilePhotoUrl) userData.photoURL = profilePhotoUrl;
 
-  // ---------------------------
-  // ROLE: USER (TravelerProfile)
-  // ---------------------------
+  // --------------------------------
+  // 5. ROLE: USER -> TravelerProfile
+  // --------------------------------
   if (user.role === "USER") {
     if (user.TravelerProfile) {
       userData.TravelerProfile = {
         update: {
-          ...(data.TravelerProfile || {}),
+          ...(travelerPayload || {}),
           ...(data.name ? { name: data.name } : {}),
           ...(profilePhotoUrl ? { profilePhoto: profilePhotoUrl } : {}),
         },
@@ -217,68 +267,41 @@ const updateProfile = async (
         create: {
           name: data.name || "",
           profilePhoto: profilePhotoUrl || "",
-          ...(data.TravelerProfile || {}),
+          ...travelerPayload,
         },
       };
     }
   }
 
-  // ---------------------------
-  // ROLE: ADMIN
-  // ---------------------------
+  // --------------------------------
+  // 6. ROLE: ADMIN
+  // --------------------------------
   if (user.role === "ADMIN") {
-    if (user.Admin) {
-      userData.Admin = {
-        update: {
-          ...(data.Admin || {}),
-          ...(data.name ? { name: data.name } : {}),
-          ...(profilePhotoUrl ? { profilePhoto: profilePhotoUrl } : {}),
-        },
-      };
-    } else {
-      userData.Admin = {
-        create: {
-          name: data.name || "",
-          email: user.email,
-          profilePhoto: profilePhotoUrl || "",
-          ...(data.Admin || {}),
-        },
-      };
-    }
+    userData.Admin = user.Admin
+      ? {
+          update: {
+            ...(data.name ? { name: data.name } : {}),
+            ...(profilePhotoUrl ? { profilePhoto: profilePhotoUrl } : {}),
+          },
+        }
+      : {
+          create: {
+            name: data.name || "",
+            email: user.email,
+            profilePhoto: profilePhotoUrl || "",
+          },
+        };
   }
 
-  // ---------------------------
-  // ROLE: MODERATOR
-  // ---------------------------
-  if (user.role === "MODERATOR") {
-    if (user.Moderator) {
-      userData.Moderator = {
-        update: {
-          ...(data.Moderator || {}),
-          ...(data.name ? { name: data.name } : {}),
-          ...(profilePhotoUrl ? { profilePhoto: profilePhotoUrl } : {}),
-        },
-      };
-    } else {
-      userData.Moderator = {
-        create: {
-          name: data.name || "",
-          email: user.email,
-          profilePhoto: profilePhotoUrl || "",
-          ...(data.Moderator || {}),
-        },
-      };
-    }
-  }
-
-  // 5. UPDATE USER
+  // --------------------------------
+  // 7. UPDATE USER (Final Prisma Query)
+  // --------------------------------
   const updatedUser = await prisma.user.update({
     where: { id: userId },
     data: userData,
     include: {
       TravelerProfile: true,
       Admin: true,
-      Moderator: true,
     },
   });
 

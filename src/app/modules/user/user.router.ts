@@ -26,9 +26,9 @@ router.post(
 // CREATE MODERATOR
 router.post(
   "/create-moderator",
-    auth(UserRole.ADMIN),
-   fileUploader.upload.single("file"),
-   (req: Request, res: Response, next: NextFunction) => {
+  auth(UserRole.ADMIN),
+  fileUploader.upload.single("file"),
+  (req: Request, res: Response, next: NextFunction) => {
     try {
       // Parse and validate JSON from req.body.data
       req.body = createModeratorSchema.parse(JSON.parse(req.body.data));
@@ -64,12 +64,28 @@ router.patch(
   userController.updateStatus
 );
 
-// UPDATE PROFILE
 router.patch(
   "/update-my-profile",
   auth(UserRole.USER, UserRole.ADMIN, UserRole.MODERATOR),
+
+  // Multer file upload
   fileUploader.upload.single("file"),
+
+  // Parse JSON body from FormData
+  (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (req.body?.data) {
+        req.body = JSON.parse(req.body.data);
+      }
+      next();
+    } catch (error) {
+      next(error);
+    }
+  },
+
   userController.updateProfile
 );
+
+
 
 export const userRoutes = router;

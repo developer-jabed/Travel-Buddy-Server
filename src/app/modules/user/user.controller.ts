@@ -64,7 +64,12 @@ const updateStatus = catchAsync(async (req: Request, res: Response) => {
 const updateProfile = catchAsync(async (req: Request, res: Response) => {
   const user = req.user as IAuthUser;
   const file = req.file;
+
+
+  console.log("Update Profile:::::::",req.body)
+
   const result = await userService.updateProfile(user.id, req.body, file);
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -72,6 +77,7 @@ const updateProfile = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
 
 export const userController = {
   createAdmin,
