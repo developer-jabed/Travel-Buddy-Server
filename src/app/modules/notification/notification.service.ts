@@ -22,9 +22,6 @@ export const NotificationService = {
       },
     });
 
-    if (existing) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Duplicate notification exists");
-    }
 
     return prisma.notification.create({ data });
   },
