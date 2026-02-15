@@ -13,7 +13,7 @@ export const MetaService = {
   },
 };
 
-// ------------------ ADMIN DASHBOARD ------------------
+
 const getAdminMetaData = async () => {
   const [
     totalUsers,
@@ -37,8 +37,7 @@ const getAdminMetaData = async () => {
 
   const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0);
 
-  // Weekly counts
-  const weeklyUsers = await getWeeklyCount(prisma.user);
+
   const weeklyTrips = await getWeeklyCount(prisma.trip);
   const weeklyBuddyRequests = await getWeeklyCount(prisma.buddyRequest);
   const weeklyMessages = await getWeeklyCount(prisma.message);
@@ -55,7 +54,7 @@ const getAdminMetaData = async () => {
     pendingReports,
     totalPayments: payments.length,
     totalRevenue,
-    weeklyUsers,
+
     weeklyTrips,
     weeklyBuddyRequests,
     weeklyMessages,
@@ -64,7 +63,7 @@ const getAdminMetaData = async () => {
   };
 };
 
-// ------------------ TRAVELER DASHBOARD ------------------
+
 const getTravelerMetaData = async (user: IJWTPayload) => {
   const userId = user.id;
 
@@ -81,7 +80,7 @@ const getTravelerMetaData = async (user: IJWTPayload) => {
 
   const avgRating = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
 
-  // Weekly counts
+
   const weeklyTrips = await getWeeklyCount(prisma.trip, { userId });
   const weeklyBuddyRequests = await getWeeklyCount(prisma.buddyRequest, { receiverId: userId });
   const weeklyMessages = await getWeeklyCount(prisma.message, { senderId: userId });
@@ -107,7 +106,7 @@ const getTravelerMetaData = async (user: IJWTPayload) => {
   };
 };
 
-// ------------------ HELPER: WEEKLY COUNTS ------------------
+
 async function getWeeklyCount(modelClient: any, where: any = {}) {
   const counts: number[] = [];
   const now = new Date();
