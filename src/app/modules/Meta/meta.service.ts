@@ -4,34 +4,17 @@ import prisma from "../../../shared/prisma";
 import { IJWTPayload } from "../../../types/common";
 import ApiError from "../../errors/ApiError";
 
+/**
+ * Fetch dashboard metadata for admin or traveler
+ */
 const fetchDashboardMetaData = async (user: IJWTPayload) => {
-  try {
-    switch (user.role) {
-      case UserRole.ADMIN:
-        return await getAdminMetaData();
-      case UserRole.USER:
-        return await getTravelerMetaData(user);
-      default:
-        throw new ApiError(httpStatus.BAD_REQUEST, "Invalid user role!");
-    }
-  } catch (error) {
-    console.error("Meta fetch error:", error);
-    // Return safe defaults instead of crashing
-    return {
-      totalUsers: 0,
-      totalTrips: 0,
-      totalBuddyRequests: 0,
-      totalMessages: 0,
-      totalReviews: 0,
-      totalRevenue: 0,
-      unreadNotifications: 0,
-      weeklyUsers: [0, 0, 0, 0],
-      weeklyBuddyRequests: [0, 0, 0, 0],
-      weeklyMessages: [0, 0, 0, 0],
-      weeklyReviews: [0, 0, 0, 0],
-      weeklyNotifications: [0, 0, 0, 0],
-      weeklyTrips: [0, 0, 0, 0],
-    };
+  switch (user.role) {
+    case UserRole.ADMIN:
+      return await getAdminMetaData();
+    case UserRole.USER:
+      return await getTravelerMetaData(user);
+    default:
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid user role!");
   }
 };
 
@@ -39,41 +22,54 @@ const fetchDashboardMetaData = async (user: IJWTPayload) => {
 const getAdminMetaData = async () => {
   const [
     totalUsers,
+    totalVerifiedUsers,
     totalTrips,
     totalBuddyRequests,
+    pendingBuddyRequests,
     totalReports,
+    pendingReports,
     payments,
-  ] = await Promise.all([
-    prisma.user.count(),
-    prisma.trip.count(),
-    prisma.buddyRequest.count(),
-    prisma.report.count(),
-    prisma.payment.findMany({ where: { status: "SUCCESS" } }),
-  ]);
-
-  const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0);
-
-  // Example weekly stats (replace with real queries if you have weekly breakdowns)
-  const weeklyUsers = [5, 10, 7, 12];
-  const weeklyBuddyRequests = [2, 4, 3, 6];
-  const weeklyMessages = [10, 12, 8, 15];
-  const weeklyReviews = [1, 2, 1, 3];
-  const weeklyNotifications = [3, 5, 2, 4];
-  const weeklyTrips = [4, 6, 5, 7];
-
-  return {
-    totalUsers,
-    totalTrips,
-    totalBuddyRequests,
-    totalReports,
-    totalRevenue,
-    unreadNotifications: 0,
     weeklyUsers,
+    weeklyTrips,
     weeklyBuddyRequests,
     weeklyMessages,
     weeklyReviews,
     weeklyNotifications,
+  ] = await Promise.all([
+    prisma.user.count(),
+    prisma.user.count({ where: { isVerified: true } }),
+    prisma.trip.count(),
+    prisma.buddyRequest.count(),
+    prisma.buddyRequest.count({ where: { status: "PENDING" } }),
+    prisma.report.count(),
+    prisma.report.count({ where: { status: "PENDING" } }),
+    prisma.payment.findMany({ where: { status: "SUCCESS" } }),
+    getWeeklyCount("user"),
+    getWeeklyCount("trip"),
+    getWeeklyCount("buddyRequest"),
+    getWeeklyCount("message"),
+    getWeeklyCount("review"),
+    getWeeklyCount("notification", { where: { isRead: false } }),
+  ]);
+
+  const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0);
+
+  return {
+    totalUsers,
+    totalVerifiedUsers,
+    totalTrips,
+    totalBuddyRequests,
+    pendingBuddyRequests,
+    totalReports,
+    pendingReports,
+    totalPayments: payments.length,
+    totalRevenue,
+    weeklyUsers,
     weeklyTrips,
+    weeklyBuddyRequests,
+    weeklyMessages,
+    weeklyReviews,
+    weeklyNotifications,
   };
 };
 
@@ -82,41 +78,80 @@ const getTravelerMetaData = async (user: IJWTPayload) => {
   const userId = user.id;
 
   const [
+    traveler,
     totalTrips,
     pendingBuddyRequests,
+    pendingReports,
     reviews,
-    unreadNotifications,
+    notifications,
   ] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      include: { TravelerProfile: true, Subscription: true },
+    }),
     prisma.trip.count({ where: { userId } }),
     prisma.buddyRequest.count({ where: { receiverId: userId, status: "PENDING" } }),
+    prisma.report.count({ where: { reportedId: userId, status: "PENDING" } }),
     prisma.review.findMany({ where: { receiverId: userId } }),
     prisma.notification.count({ where: { userId, isRead: false } }),
   ]);
 
-  const avgRating = reviews.length > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
+  const avgRating =
+    reviews.length > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
 
-  // Example weekly stats (replace with real queries)
-  const weeklyUsers = [0, 0, 0, 0];
-  const weeklyBuddyRequests = [0, 0, 0, 0];
-  const weeklyMessages = [0, 0, 0, 0];
-  const weeklyReviews = [0, 0, 0, 0];
-  const weeklyNotifications = [0, 0, 0, 0];
-  const weeklyTrips = [0, 0, 0, 0];
+  const weeklyTrips = await getWeeklyCount("trip", { where: { userId } });
+  const weeklyBuddyRequests = await getWeeklyCount("buddyRequest", { where: { receiverId: userId } });
+  const weeklyMessages = await getWeeklyCount("message", { where: { senderId: userId } });
+  const weeklyReviews = await getWeeklyCount("review", { where: { receiverId: userId } });
+  const weeklyNotifications = await getWeeklyCount("notification", { where: { userId, isRead: false } });
 
   return {
+    profile: traveler?.TravelerProfile,
+    subscription: traveler?.Subscription,
     totalTrips,
     pendingBuddyRequests,
+    pendingReports,
     totalReviews: reviews.length,
     avgRating,
-    unreadNotifications,
-    weeklyUsers,
+    unreadNotifications: notifications,
+    isVerified: traveler?.isVerified ?? false,
+    safetyScore: traveler?.safetyScore ?? 80,
+    weeklyTrips,
     weeklyBuddyRequests,
     weeklyMessages,
     weeklyReviews,
     weeklyNotifications,
-    weeklyTrips,
   };
 };
+
+/* ------------------ HELPER ------------------ */
+/**
+ * Returns count for last 4 weeks for given model
+ */
+async function getWeeklyCount(
+  model: string,
+  options: { where?: any } = {}
+): Promise<number[]> {
+  const counts: number[] = [];
+  const now = new Date();
+
+  for (let i = 3; i >= 0; i--) {
+    const start = new Date(now);
+    start.setDate(start.getDate() - (i + 1) * 7);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(now);
+    end.setDate(end.getDate() - i * 7);
+    end.setHours(23, 59, 59, 999);
+
+    const where = { ...options.where, createdAt: { gte: start, lt: end } };
+
+    const count = await (prisma as any)[model].count({ where });
+    counts.push(count);
+  }
+
+  return counts;
+}
 
 export const MetaService = {
   fetchDashboardMetaData,
