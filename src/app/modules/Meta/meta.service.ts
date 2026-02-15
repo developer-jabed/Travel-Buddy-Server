@@ -4,18 +4,16 @@ import prisma from "../../../shared/prisma";
 import { IJWTPayload } from "../../../types/common";
 import ApiError from "../../errors/ApiError";
 
-
-const fetchDashboardMetaData = async (user: IJWTPayload) => {
-  switch (user.role) {
-    case UserRole.ADMIN:
-      return await getAdminMetaData();
-    case UserRole.USER:
-      return await getTravelerMetaData(user);
-    default:
-      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid user role!");
-  }
+// Main function
+export const MetaService = {
+  fetchDashboardMetaData: async (user: IJWTPayload) => {
+    if (user.role === UserRole.ADMIN) return getAdminMetaData();
+    if (user.role === UserRole.USER) return getTravelerMetaData(user);
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid user role!");
+  },
 };
 
+// ------------------ ADMIN DASHBOARD ------------------
 const getAdminMetaData = async () => {
   const [
     totalUsers,
@@ -26,12 +24,6 @@ const getAdminMetaData = async () => {
     totalReports,
     pendingReports,
     payments,
-    weeklyUsers,
-    weeklyTrips,
-    weeklyBuddyRequests,
-    weeklyMessages,
-    weeklyReviews,
-    weeklyNotifications,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { isVerified: true } }),
@@ -41,15 +33,17 @@ const getAdminMetaData = async () => {
     prisma.report.count(),
     prisma.report.count({ where: { status: "PENDING" } }),
     prisma.payment.findMany({ where: { status: "SUCCESS" } }),
-    getWeeklyCount("user"),
-    getWeeklyCount("trip"),
-    getWeeklyCount("buddyRequest"),
-    getWeeklyCount("message"),
-    getWeeklyCount("review"),
-    getWeeklyCount("notification", { where: { isRead: false } }),
   ]);
 
   const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0);
+
+  // Weekly counts
+  const weeklyUsers = await getWeeklyCount(prisma.user);
+  const weeklyTrips = await getWeeklyCount(prisma.trip);
+  const weeklyBuddyRequests = await getWeeklyCount(prisma.buddyRequest);
+  const weeklyMessages = await getWeeklyCount(prisma.message);
+  const weeklyReviews = await getWeeklyCount(prisma.review);
+  const weeklyNotifications = await getWeeklyCount(prisma.notification, { isRead: false });
 
   return {
     totalUsers,
@@ -70,37 +64,29 @@ const getAdminMetaData = async () => {
   };
 };
 
-
+// ------------------ TRAVELER DASHBOARD ------------------
 const getTravelerMetaData = async (user: IJWTPayload) => {
   const userId = user.id;
 
-  const [
-    traveler,
-    totalTrips,
-    pendingBuddyRequests,
-    pendingReports,
-    reviews,
-    notifications,
-  ] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: userId },
-      include: { TravelerProfile: true, Subscription: true },
-    }),
-    prisma.trip.count({ where: { userId } }),
-    prisma.buddyRequest.count({ where: { receiverId: userId, status: "PENDING" } }),
-    prisma.report.count({ where: { reportedId: userId, status: "PENDING" } }),
-    prisma.review.findMany({ where: { receiverId: userId } }),
-    prisma.notification.count({ where: { userId, isRead: false } }),
-  ]);
+  const traveler = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { TravelerProfile: true, Subscription: true },
+  });
 
-  const avgRating =
-    reviews.length > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
+  const totalTrips = await prisma.trip.count({ where: { userId } });
+  const pendingBuddyRequests = await prisma.buddyRequest.count({ where: { receiverId: userId, status: "PENDING" } });
+  const pendingReports = await prisma.report.count({ where: { reportedId: userId, status: "PENDING" } });
+  const reviews = await prisma.review.findMany({ where: { receiverId: userId } });
+  const unreadNotifications = await prisma.notification.count({ where: { userId, isRead: false } });
 
-  const weeklyTrips = await getWeeklyCount("trip", { where: { userId } });
-  const weeklyBuddyRequests = await getWeeklyCount("buddyRequest", { where: { receiverId: userId } });
-  const weeklyMessages = await getWeeklyCount("message", { where: { senderId: userId } });
-  const weeklyReviews = await getWeeklyCount("review", { where: { receiverId: userId } });
-  const weeklyNotifications = await getWeeklyCount("notification", { where: { userId, isRead: false } });
+  const avgRating = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
+
+  // Weekly counts
+  const weeklyTrips = await getWeeklyCount(prisma.trip, { userId });
+  const weeklyBuddyRequests = await getWeeklyCount(prisma.buddyRequest, { receiverId: userId });
+  const weeklyMessages = await getWeeklyCount(prisma.message, { senderId: userId });
+  const weeklyReviews = await getWeeklyCount(prisma.review, { receiverId: userId });
+  const weeklyNotifications = await getWeeklyCount(prisma.notification, { userId, isRead: false });
 
   return {
     profile: traveler?.TravelerProfile,
@@ -110,7 +96,7 @@ const getTravelerMetaData = async (user: IJWTPayload) => {
     pendingReports,
     totalReviews: reviews.length,
     avgRating,
-    unreadNotifications: notifications,
+    unreadNotifications,
     isVerified: traveler?.isVerified ?? false,
     safetyScore: traveler?.safetyScore ?? 80,
     weeklyTrips,
@@ -121,10 +107,8 @@ const getTravelerMetaData = async (user: IJWTPayload) => {
   };
 };
 
-async function getWeeklyCount(
-  model: string,
-  options: { where?: any } = {}
-): Promise<number[]> {
+// ------------------ HELPER: WEEKLY COUNTS ------------------
+async function getWeeklyCount(modelClient: any, where: any = {}) {
   const counts: number[] = [];
   const now = new Date();
 
@@ -137,27 +121,13 @@ async function getWeeklyCount(
     end.setDate(end.getDate() - i * 7);
     end.setHours(23, 59, 59, 999);
 
-    const where = { ...options.where, createdAt: { gte: start, lt: end } };
-
     try {
-
-      const modelClient = (prisma as any)[model];
-      if (!modelClient || typeof modelClient.count !== "function") {
-        counts.push(0);
-        continue;
-      }
-      const count = await modelClient.count({ where });
+      const count = await modelClient.count({ where: { ...where, createdAt: { gte: start, lt: end } } });
       counts.push(count);
-    } catch (err) {
-      console.error(`Weekly count error for model ${model}:`, err);
-      counts.push(0); 
+    } catch {
+      counts.push(0);
     }
   }
 
   return counts;
 }
-
-
-export const MetaService = {
-  fetchDashboardMetaData,
-};
