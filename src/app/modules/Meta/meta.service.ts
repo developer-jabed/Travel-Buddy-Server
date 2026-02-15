@@ -4,9 +4,7 @@ import prisma from "../../../shared/prisma";
 import { IJWTPayload } from "../../../types/common";
 import ApiError from "../../errors/ApiError";
 
-/**
- * Fetch dashboard metadata for admin or traveler
- */
+
 const fetchDashboardMetaData = async (user: IJWTPayload) => {
   switch (user.role) {
     case UserRole.ADMIN:
@@ -18,7 +16,6 @@ const fetchDashboardMetaData = async (user: IJWTPayload) => {
   }
 };
 
-/* ------------------ ADMIN DASHBOARD ------------------ */
 const getAdminMetaData = async () => {
   const [
     totalUsers,
@@ -73,7 +70,7 @@ const getAdminMetaData = async () => {
   };
 };
 
-/* ------------------ TRAVELER DASHBOARD ------------------ */
+
 const getTravelerMetaData = async (user: IJWTPayload) => {
   const userId = user.id;
 
@@ -124,10 +121,6 @@ const getTravelerMetaData = async (user: IJWTPayload) => {
   };
 };
 
-/* ------------------ HELPER ------------------ */
-/**
- * Returns count for last 4 weeks for given model
- */
 async function getWeeklyCount(
   model: string,
   options: { where?: any } = {}
@@ -146,12 +139,24 @@ async function getWeeklyCount(
 
     const where = { ...options.where, createdAt: { gte: start, lt: end } };
 
-    const count = await (prisma as any)[model].count({ where });
-    counts.push(count);
+    try {
+
+      const modelClient = (prisma as any)[model];
+      if (!modelClient || typeof modelClient.count !== "function") {
+        counts.push(0);
+        continue;
+      }
+      const count = await modelClient.count({ where });
+      counts.push(count);
+    } catch (err) {
+      console.error(`Weekly count error for model ${model}:`, err);
+      counts.push(0); 
+    }
   }
 
   return counts;
 }
+
 
 export const MetaService = {
   fetchDashboardMetaData,
